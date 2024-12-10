@@ -1,18 +1,17 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 import 'core-js'
 
 import App from './App'
-import store from './store'
-
-const queryClient = new QueryClient();
+import store from './redux/store'
+import { GlobalProvider } from './context/GlobalContext'
 
 createRoot(document.getElementById('root')).render(
   <Provider store={store}>
-    <QueryClientProvider client={queryClient}>
+    <GlobalProvider>
     <App />
-    </QueryClientProvider>
+    </GlobalProvider>
   </Provider>,
 )

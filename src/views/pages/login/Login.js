@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { loginUser } from '../../../redux/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import {
   CButton,
@@ -15,32 +17,23 @@ import {
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
-import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const { loading, error } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        `${process.env.API_BASE_URL}/login`,
-        { email, password }
-      );
-      const { token } = response.data;
 
-      // Save token to session storage
-      sessionStorage.setItem('authToken', token);
-
-      // Navigate to dashboard
-      navigate('/dashboard');
-    } catch (err) {
-      console.error(err);
-      setError('Login failed. Please check your credentials.');
-    }
+    // Dispatch the login action
+    dispatch(loginUser({ email, password })).then((res) => {
+      if (res.meta.requestStatus === 'fulfilled' && res.payload?.message === 'OTP sent to your email') {
+        navigate('/otp', { state: { email } });
+      }
+    });
   };
 
   return (
@@ -81,8 +74,8 @@ const Login = () => {
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton type="submit" color="primary" className="px-4">
-                          Login
+                        <CButton type="submit" color="primary" className="px-4" disabled={loading}>
+                          {loading ? 'Logging in...' : 'Login'}
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">
@@ -98,10 +91,7 @@ const Login = () => {
                 <CCardBody className="text-center">
                   <div>
                     <h2>Sign up</h2>
-                    <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
-                    </p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
                     <CButton color="primary" className="mt-3" active tabIndex={-1}>
                       Register Now!
                     </CButton>
