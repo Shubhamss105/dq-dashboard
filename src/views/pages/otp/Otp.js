@@ -15,6 +15,7 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
+  CSpinner
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked } from '@coreui/icons';
@@ -68,7 +69,7 @@ const Otp = () => {
                     <CRow>
                       <CCol xs={6}>
                         <CButton type="submit" color="primary" className="px-4" disabled={loading}>
-                          {loading ? 'Verifying...' : 'Verify OTP'}
+                          {loading ? <CSpinner as="span" size="sm" aria-hidden="true" /> : 'Verify OTP'}
                         </CButton>
                       </CCol>
                     </CRow>

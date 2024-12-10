@@ -14,6 +14,7 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
+  CSpinner
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
@@ -75,7 +76,7 @@ const Login = () => {
                     <CRow>
                       <CCol xs={6}>
                         <CButton type="submit" color="primary" className="px-4" disabled={loading}>
-                          {loading ? 'Logging in...' : 'Login'}
+                          {loading ? <CSpinner as="span" size="sm" aria-hidden="true" /> : 'Login'}
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">
