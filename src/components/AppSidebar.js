@@ -8,12 +8,14 @@ import {
   CSidebarFooter,
   CSidebarHeader,
   CSidebarToggler,
+  CContainer,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 
 import { AppSidebarNav } from './AppSidebarNav'
 
 import { logo } from 'src/assets/brand/logo'
+import DQLogo from '../assets/brand/logo-dark.png'
 import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
@@ -37,7 +39,17 @@ const AppSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/">
-          <CIcon customClassName="sidebar-brand-full" icon={logo} height={32} />
+          {/* <CIcon customClassName="sidebar-brand-full" icon={logo} height={32} /> */}
+          <CContainer className="d-flex align-items-center justify-content-center">
+            <img
+              src={DQLogo}
+              alt="Brand Logo"
+              className="sidebar-brand-full"
+              style={{ height: '40px', marginRight: '8px' }}
+            />
+            <h3 className="text-white m-0">DQ</h3>
+          </CContainer>
+
           <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />
         </CSidebarBrand>
         <CCloseButton
