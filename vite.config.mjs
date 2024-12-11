@@ -28,6 +28,7 @@ export default defineConfig(() => {
       exclude: [],
     },
     optimizeDeps: {
+      include: ['ag-grid-react', 'ag-grid-community'],
       force: true,
       esbuildOptions: {
         loader: {

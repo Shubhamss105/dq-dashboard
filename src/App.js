@@ -10,6 +10,7 @@ import './scss/examples.scss'
 import PrivateRoute from './components/PrivateRoute'
 import Page404 from './views/pages/page404/Page404'
 import Orders from './views/orders/Orders'
+import Supplier from './views/inventory/supplier/Supplier'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -60,6 +61,7 @@ const App = () => {
               {/* Nested Authenticated Routes */}
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="orders" element={<Orders/>} />
+              <Route path="supplier" element={<Supplier/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>
