@@ -39,6 +39,14 @@ const rows = [
     phone: "654-321-9876",
     rawItems: "Wood, Glass",
   },
+  {
+    id: 5,
+    supplierId: "SUP-004",
+    name: "Supplier D",
+    email: "supplierD@example.com",
+    phone: "654-321-9876",
+    rawItems: "Wood, Glass",
+  },
 ];
 
 const columns = [

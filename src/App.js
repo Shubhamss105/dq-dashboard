@@ -11,6 +11,7 @@ import PrivateRoute from './components/PrivateRoute'
 import Page404 from './views/pages/page404/Page404'
 import Orders from './views/orders/Orders'
 import Supplier from './views/inventory/supplier/Supplier'
+import QRCode from './views/qrCode/QRCode'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -62,6 +63,7 @@ const App = () => {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="orders" element={<Orders/>} />
               <Route path="supplier" element={<Supplier/>} />
+              <Route path="qr-code" element={<QRCode/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>

@@ -14,10 +14,12 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-  CSpinner
+  CSpinner,
+  CImage
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
+import logo from '../../../assets/brand/logo-dark.png'
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -88,15 +90,9 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
+              <CCard className="text-white bg-white py-5" style={{ width: '44%' }}>
                 <CCardBody className="text-center">
-                  <div>
-                    <h2>Sign up</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
-                    <CButton color="primary" className="mt-3" active tabIndex={-1}>
-                      Register Now!
-                    </CButton>
-                  </div>
+                <CImage fluid src={logo} />
                 </CCardBody>
               </CCard>
             </CCardGroup>

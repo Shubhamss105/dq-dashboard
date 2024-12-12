@@ -27,16 +27,19 @@ export const verifyOtp = createAsyncThunk('auth/verifyOtp', async (otpData, { re
     }
 });
 
+// Initial state
+const initialState = {
+  user: localStorage.getItem('userId') || null,
+  token: localStorage.getItem('authToken') || null,
+  restaurantId: localStorage.getItem('restaurantId') || null,
+  loading: false,
+  error: null,
+};
+
 // Auth slice
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {
-    user: null,
-    token: null,
-    restaurantId: null,
-    loading: false,
-    error: null,
-  },
+  initialState,
   reducers: {
     logout: (state) => {
       state.user = null;
@@ -44,6 +47,7 @@ const authSlice = createSlice({
       state.restaurantId = null;
       localStorage.removeItem('authToken');
       localStorage.removeItem('restaurantId');
+      localStorage.removeItem('userId');
       toast.info('You have been logged out.', { autoClose: 3000 });
     },
   },
@@ -77,11 +81,13 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = null;
         state.token = action.payload.token;
-        state.restaurantId = action.payload.restaurantId;
+        state.restaurantId = action.payload.restaurant_id;
+        state.user = action.payload.user_id;
 
         // Save to localStorage
         localStorage.setItem('authToken', action.payload.token);
-        localStorage.setItem('restaurantId', action.payload.restaurantId);
+        localStorage.setItem('restaurantId', action.payload.restaurant_id);
+        localStorage.setItem('userId', action.payload.user_id);
 
         // Show success toast
         toast.success('OTP verified successfully!', { autoClose: 3000 });
@@ -96,5 +102,11 @@ const authSlice = createSlice({
 });
 
 export const { logout } = authSlice.actions;
+
+export const selectAuth = (state) => ({
+  restaurantId: state.auth.restaurantId,
+  token: state.auth.token,
+  userId: state.auth.user,
+});
 
 export default authSlice.reducer;
