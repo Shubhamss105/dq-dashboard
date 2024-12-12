@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   CButton,
   CModal,
@@ -11,53 +11,83 @@ import {
   CCol,
 } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
-import { cilPlus, cilX } from "@coreui/icons";
+import { cilPlus } from "@coreui/icons";
 import { useDispatch, useSelector } from "react-redux";
-import { createQrCode } from "../../redux/slices/qrSlice";
+import { createQrCode, fetchQrCodes, deleteQrCode } from "../../redux/slices/qrSlice";
 
 export default function QRCode() {
   const [modalVisible, setModalVisible] = useState(false);
-  const [tableNumber, setTableNumber] = useState("");
+  const [actionModalVisible, setActionModalVisible] = useState(false);
+  const [selectedQr, setSelectedQr] = useState(null);
+  const [tableNo, setTableNo] = useState("");
 
   const { qrList, loading } = useSelector((state) => state.qr);
   const restaurantId = useSelector((state) => state.auth.restaurantId);
 
   const dispatch = useDispatch();
 
-  const handleSave = () => {
-    if (!tableNumber) {
+  useEffect(() => {
+    if (restaurantId) {
+      dispatch(fetchQrCodes(restaurantId));
+    }
+  }, [dispatch, restaurantId]);
+
+  const handleSave = async () => {
+    if (!tableNo) {
       alert("Please enter a valid table number.");
       return;
     }
 
-    dispatch(createQrCode({ restaurantId, tableNumber }));
-    // setModalVisible(false);
-    setTableNumber(""); 
+    await dispatch(createQrCode({ restaurantId, tableNo }));
+    setModalVisible(false);
+    setTableNo("");
+    // Refetch QR list to ensure UI updates
+    dispatch(fetchQrCodes(restaurantId));
+  };
+
+  const handleDelete = async () => {
+    if (selectedQr) {
+      await dispatch(deleteQrCode(selectedQr.id));
+      setActionModalVisible(false);
+      // Refetch QR list to ensure UI updates
+      dispatch(fetchQrCodes(restaurantId));
+    }
+  };
+
+  const handleDownload = () => {
+    if (selectedQr) {
+      const link = document.createElement("a");
+      link.href = selectedQr.qrCodeUrl;
+      link.download = selectedQr.qrCodeUrl.split("/").pop();
+      link.click();
+      setActionModalVisible(false);
+    }
+  };
+
+  const handleQrClick = (qr) => {
+    setSelectedQr(qr);
+    setActionModalVisible(true);
   };
 
   return (
     <div className="p-4">
-      <h1 className="fs-4 fw-bold">Generate QR for Table</h1>
+      <h1 className="fs-4 fw-semibold text-center">Generate QR for Table</h1>
 
       <CRow className="mt-5">
         {/* Render QR containers */}
-        {qrList?.map((qr, index) => (
-          <CCol key={index} xs="auto">
+        {qrList?.map((qr) => (
+          <CCol key={qr.id} xs="auto">
             <CContainer
               className="d-flex flex-column align-items-center justify-content-center bg-white border rounded"
               style={{
-                width: "6rem",
-                height: "6rem",
+                width: "8rem",
+                height: "8rem",
                 marginBottom: "1rem",
                 cursor: "pointer",
               }}
+              onClick={() => handleQrClick(qr)}
             >
-              <div className="fw-bold">{qr.tableNumber}</div>
-              <img
-                src={qr.qrCodeUrl}
-                alt={`QR for Table ${qr.tableNumber}`}
-                style={{ width: "80%", marginTop: "0.5rem" }}
-              />
+              <div className="fw-bold">Table {qr.tableNumber}</div>
             </CContainer>
           </CCol>
         ))}
@@ -73,23 +103,22 @@ export default function QRCode() {
             }}
             onClick={() => setModalVisible(true)}
           >
-            <CIcon icon={cilPlus} size="xxl" className="text-black font-extrabold"/>
+            <CIcon icon={cilPlus} size="xxl" className="text-black" />
           </CContainer>
         </CCol>
       </CRow>
 
-      {/* Modal */}
+      {/* Modal for Adding QR */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader className="d-flex justify-content-between align-items-center">
-          <h2 className="fs-5 fw-bold">Generate QR for Table</h2>
-         
+          <h2 className="fs-5 fw-bold">Generate QR</h2>
         </CModalHeader>
         <CModalBody>
           <CFormInput
             type="number"
             placeholder="Table number"
-            value={tableNumber}
-            onChange={(e) => setTableNumber(e.target.value)}
+            value={tableNo}
+            onChange={(e) => setTableNo(e.target.value)}
             className="mb-3"
           />
         </CModalBody>
@@ -100,6 +129,25 @@ export default function QRCode() {
           <CButton color="primary" onClick={handleSave} disabled={loading}>
             {loading ? "Saving..." : "Save"}
           </CButton>
+        </CModalFooter>
+      </CModal>
+
+      {/* Modal for Actions (Delete/Download) */}
+      <CModal visible={actionModalVisible} onClose={() => setActionModalVisible(false)}>
+        <CModalHeader className="d-flex justify-content-between align-items-center">
+          <h2 className="fs-5 fw-bold">QR Code Actions</h2>
+        </CModalHeader>
+        <CModalBody>
+          <p className="text-center">Select an action for Table {selectedQr?.tableNumber}</p>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="danger" onClick={handleDelete}>
+            Delete
+          </CButton>
+          <CButton color="primary" onClick={handleDownload}>
+            Download
+          </CButton>
+         
         </CModalFooter>
       </CModal>
     </div>
