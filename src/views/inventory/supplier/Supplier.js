@@ -1,37 +1,29 @@
-import React, { useState, useEffect } from 'react'
-import { DataGrid } from '@mui/x-data-grid'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchSuppliers, addSupplier, updateSupplier, deleteSupplier } from '../../../redux/slices/supplierSlice'
-import {
-  CButton,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-  CFormInput,
-  CSpinner,
-} from '@coreui/react'
+import React, { useState, useEffect } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchSuppliers, addSupplier, updateSupplier, deleteSupplier } from '../../../redux/slices/supplierSlice';
+import { CButton, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CFormInput, CSpinner } from '@coreui/react';
+import { GridToolbar } from '@mui/x-data-grid';
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash } from '@coreui/icons'
-import { GridToolbar } from '@mui/x-data-grid'
-import jsPDF from 'jspdf'
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const Supplier = () => {
-  const dispatch = useDispatch()
-  const { suppliers, loading } = useSelector((state) => state.suppliers)
+  const dispatch = useDispatch();
+  const { suppliers, loading } = useSelector((state) => state.suppliers);
   const restaurantId = useSelector((state) => state.auth.restaurantId);
 
-  const [modalVisible, setModalVisible] = useState(false)
-  const [editModalVisible, setEditModalVisible] = useState(false)
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [formData, setFormData] = useState({
     supplierName: '',
     email: '',
     phoneNumber: '',
     rawItem: '',
-  })
-  const [selectedSupplier, setSelectedSupplier] = useState(null)
+  });
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
 
   useEffect(() => {
     if (restaurantId) {
@@ -40,8 +32,8 @@ const Supplier = () => {
   }, [dispatch, restaurantId]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSaveSupplier = () => {
     dispatch(addSupplier({ restaurantId, ...formData }))
@@ -49,17 +41,18 @@ const Supplier = () => {
     // setModalVisible(false)
     setFormData({ supplierName: '', email: '', phoneNumber: '', rawItem: '' })
   }
-
   const handleUpdateSupplier = () => {
-    dispatch(updateSupplier({ id: selectedSupplier.id, restaurantId, ...formData }))
-    // setEditModalVisible(false)
-    setFormData({ supplierName: '', email: '', phoneNumber: '', rawItem: '' })
-  }
+    dispatch(updateSupplier({ id: selectedSupplier.id, restaurantId, ...formData }));
+    dispatch(fetchSuppliers({ restaurantId }));
+    // setEditModalVisible(false);
+    setFormData({ supplierName: '', email: '', phoneNumber: '', rawItem: '' });
+  };
 
   const handleDeleteSupplier = () => {
-    dispatch(deleteSupplier({ id: selectedSupplier.id, restaurantId }))
-    setDeleteModalVisible(false)
-  }
+    dispatch(deleteSupplier({ id: selectedSupplier.id, restaurantId }));
+    dispatch(fetchSuppliers({ restaurantId }));
+    setDeleteModalVisible(false);
+  };
 
   const exportToCSV = () => {
     const csvContent =
@@ -68,27 +61,136 @@ const Supplier = () => {
       '\n' +
       suppliers
         .map((row) => [row.id, row.supplierName, row.email, row.phoneNumber, row.rawItem].join(','))
-        .join('\n')
-    const link = document.createElement('a')
-    link.href = encodeURI(csvContent)
-    link.download = 'suppliers.csv'
-    link.click()
-  }
+        .join('\n');
+    const link = document.createElement('a');
+    link.href = encodeURI(csvContent);
+    link.download = 'suppliers.csv';
+    link.click();
+  };
 
   const exportToPDF = () => {
-    const doc = new jsPDF()
-    doc.text('Suppliers Management', 10, 10)
-    const tableColumn = ['Supplier ID', 'Name', 'Email', 'Phone Number', 'Raw Items']
+    const doc = new jsPDF();
+    doc.text('Suppliers Management', 10, 10);
+    const tableColumn = ['Supplier ID', 'Name', 'Email', 'Phone Number', 'Raw Items'];
     const tableRows = suppliers.map((row) => [
       row.id,
       row.supplierName,
       row.email,
       row.phoneNumber,
       row.rawItem,
-    ])
-    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 })
-    doc.save('suppliers.pdf')
-  }
+    ]);
+    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 });
+    doc.save('suppliers.pdf');
+  };
+
+  const renderAddSupplierModal = () => (
+    <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+      <CModalHeader>
+        <CModalTitle>Add Supplier</CModalTitle>
+      </CModalHeader>
+      <CModalBody>
+        <CFormInput
+          className="mb-3"
+          placeholder="Supplier Name"
+          name="supplierName"
+          value={formData.supplierName}
+          onChange={handleChange}
+        />
+        <CFormInput
+          className="mb-3"
+          placeholder="Email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        <CFormInput
+          className="mb-3"
+          placeholder="Phone Number"
+          name="phoneNumber"
+          value={formData.phoneNumber}
+          onChange={handleChange}
+        />
+        <CFormInput
+          className="mb-3"
+          placeholder="Raw Item"
+          name="rawItem"
+          value={formData.rawItem}
+          onChange={handleChange}
+        />
+      </CModalBody>
+      <CModalFooter>
+        <CButton color="secondary" onClick={() => setModalVisible(false)}>
+          Close
+        </CButton>
+        <CButton color="primary" onClick={handleSaveSupplier} disabled={loading}>
+          {loading ? 'Saving...' : 'Save'}
+        </CButton>
+      </CModalFooter>
+    </CModal>
+  );
+
+  const renderEditSupplierModal = () => (
+    <CModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} centered>
+      <CModalHeader>
+        <CModalTitle>Edit Supplier</CModalTitle>
+      </CModalHeader>
+      <CModalBody>
+        <CFormInput
+          className="mb-3"
+          placeholder="Supplier Name"
+          name="supplierName"
+          value={formData.supplierName}
+          onChange={handleChange}
+        />
+        <CFormInput
+          className="mb-3"
+          placeholder="Email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        <CFormInput
+          className="mb-3"
+          placeholder="Phone Number"
+          name="phoneNumber"
+          value={formData.phoneNumber}
+          onChange={handleChange}
+        />
+        <CFormInput
+          className="mb-3"
+          placeholder="Raw Item"
+          name="rawItem"
+          value={formData.rawItem}
+          onChange={handleChange}
+        />
+      </CModalBody>
+      <CModalFooter>
+        <CButton color="secondary" onClick={() => setEditModalVisible(false)}>
+          Close
+        </CButton>
+        <CButton color="primary" onClick={handleUpdateSupplier} disabled={loading}>
+          {loading ? 'Saving...' : 'Save Changes'}
+        </CButton>
+      </CModalFooter>
+    </CModal>
+  );
+
+  const renderDeleteSupplierModal = () => (
+    <CModal visible={deleteModalVisible} onClose={() => setDeleteModalVisible(false)}>
+      <CModalHeader>
+        <CModalTitle>Delete Supplier</CModalTitle>
+      </CModalHeader>
+      <CModalBody>Are you sure you want to delete this supplier?</CModalBody>
+      <CModalFooter>
+        <CButton color="secondary" onClick={() => setDeleteModalVisible(false)}>
+          Cancel
+        </CButton>
+        <CButton color="danger" onClick={handleDeleteSupplier}>
+          Delete
+        </CButton>
+      </CModalFooter>
+    </CModal>
+  );
 
   const columns = [
     { field: 'id', headerName: 'Supplier ID', flex: 1 },
@@ -108,14 +210,14 @@ const Supplier = () => {
             color="secondary"
             size="sm"
             onClick={() => {
-              setSelectedSupplier(params.row)
+              setSelectedSupplier(params.row);
               setFormData({
                 supplierName: params.row.supplierName,
                 email: params.row.email,
                 phoneNumber: params.row.phoneNumber,
                 rawItem: params.row.rawItem,
-              })
-              setEditModalVisible(true)
+              });
+              setEditModalVisible(true);
             }}
           >
             <CIcon icon={cilPencil} />
@@ -124,8 +226,8 @@ const Supplier = () => {
             color="danger"
             size="sm"
             onClick={() => {
-              setSelectedSupplier(params.row)
-              setDeleteModalVisible(true)
+              setSelectedSupplier(params.row);
+              setDeleteModalVisible(true);
             }}
           >
             <CIcon icon={cilTrash} />
@@ -133,7 +235,7 @@ const Supplier = () => {
         </div>
       ),
     },
-  ]
+  ];
 
   return (
     <div style={{ padding: '20px' }}>
@@ -182,129 +284,15 @@ const Supplier = () => {
             }}
             disableSelectionOnClick
             autoHeight
-            sx={{
-              '& .MuiDataGrid-columnHeaderTitle': {
-                fontWeight: 'bold',
-                fontSize: '1.1rem',
-              },
-              '& .MuiDataGrid-toolbarContainer': {
-                justifyContent: 'flex-end',
-              },
-              '& .MuiDataGrid-root': {
-                fontSize: '1rem',
-              },
-            }}
           />
         )}
       </div>
 
-      {/* Add Supplier Modal */}
-      <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-        <CModalHeader>
-          <CModalTitle>Add Supplier</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <CFormInput
-            className="mb-3"
-            placeholder="Supplier Name"
-            name="supplierName"
-            value={formData.supplierName}
-            onChange={handleChange}
-          />
-          <CFormInput
-            className="mb-3"
-            placeholder="Email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <CFormInput
-            className="mb-3"
-            placeholder="Phone Number"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleChange}
-          />
-          <CFormInput
-            className="mb-3"
-            placeholder="Raw Item"
-            name="rawItem"
-            value={formData.rawItem}
-            onChange={handleChange}
-          />
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>
-            Close
-          </CButton>
-          <CButton color="primary" onClick={handleSaveSupplier} disabled={loading}>
-          {loading ? "Saving..." : "Save"}
-          </CButton>
-        </CModalFooter>
-      </CModal>
-
-      {/* Edit Supplier Modal */}
-      <CModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} centered>
-        <CModalHeader>
-          <CModalTitle>Edit Supplier</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <CFormInput
-            className="mb-3"
-            placeholder="Supplier Name"
-            name="supplierName"
-            value={formData.supplierName}
-            onChange={handleChange}
-          />
-          <CFormInput
-            className="mb-3"
-            placeholder="Email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <CFormInput
-            className="mb-3"
-            placeholder="Phone Number"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleChange}
-          />
-          <CFormInput
-            className="mb-3"
-            placeholder="Raw Item"
-            name="rawItem"
-            value={formData.rawItem}
-            onChange={handleChange}
-          />
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setEditModalVisible(false)}>
-            Close
-          </CButton>
-          <CButton color="primary" onClick={handleUpdateSupplier} disabled={loading}>
-          {loading ? "Saving..." : "Save Changes"}
-          </CButton>
-        </CModalFooter>
-      </CModal>
-
-      {/* Delete Supplier Modal */}
-      <CModal visible={deleteModalVisible} onClose={() => setDeleteModalVisible(false)}>
-        <CModalHeader>
-          <CModalTitle>Delete Supplier</CModalTitle>
-        </CModalHeader>
-        <CModalBody>Are you sure you want to delete this supplier?</CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setDeleteModalVisible(false)}>
-            Cancel
-          </CButton>
-          <CButton color="danger" onClick={handleDeleteSupplier}>
-            Delete
-          </CButton>
-        </CModalFooter>
-      </CModal>
+      {renderAddSupplierModal()}
+      {renderEditSupplierModal()}
+      {renderDeleteSupplierModal()}
     </div>
-  )
-}
+  );
+};
 
 export default Supplier;
