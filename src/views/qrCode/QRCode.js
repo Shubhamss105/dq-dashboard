@@ -76,12 +76,12 @@ export default function QRCode() {
       <CRow className="mt-5">
         {/* Render QR containers */}
         {qrList?.map((qr) => (
-          <CCol key={qr.id} xs="auto">
+          <CCol key={qr.id} xs="auto" className="mx-4">
             <CContainer
-              className="d-flex flex-column align-items-center justify-content-center bg-white border rounded"
+              className="d-flex flex-column align-items-center justify-content-center bg-white shadow-lg border rounded"
               style={{
-                width: "8rem",
-                height: "8rem",
+                width: "10rem",
+                height: "10rem",
                 marginBottom: "1rem",
                 cursor: "pointer",
               }}
@@ -97,8 +97,8 @@ export default function QRCode() {
           <CContainer
             className="d-flex align-items-center justify-content-center bg-white text-white shadow-lg"
             style={{
-              width: "8rem",
-              height: "8rem",
+              width: "10rem",
+              height: "10rem",
               cursor: "pointer",
             }}
             onClick={() => setModalVisible(true)}
