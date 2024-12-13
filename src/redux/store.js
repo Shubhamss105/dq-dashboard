@@ -4,6 +4,7 @@ import authReducer from './slices/authSlice';
 import themeReducer from './slices/themeSlice';
 import qrReducer from './slices/qrSlice';
 import categoryReducer from './slices/categorySlice';
+import supplierReducer from './slices/supplierSlice';
 
 // Configure the Redux store
 const store = configureStore({
@@ -12,6 +13,7 @@ const store = configureStore({
     theme: themeReducer,
     qr: qrReducer,
     category: categoryReducer,
+    suppliers: supplierReducer,
   },
 });
 

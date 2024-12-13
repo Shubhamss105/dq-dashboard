@@ -49,7 +49,7 @@ export default function Category() {
   
     const formData = { categoryName, categoryImage, restaurantId, token }
     dispatch(createCategory(formData)).then(() => {
-      dispatch(fetchCategories({ restaurantId, token })); // Re-fetch categories after adding a new one
+      dispatch(fetchCategories({ restaurantId, token }));
       setCategoryName('')
       setCategoryImage(null)
       setModalVisible(false);
