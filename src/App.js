@@ -14,6 +14,8 @@ import Supplier from './views/inventory/supplier/Supplier'
 import QRCode from './views/qrCode/QRCode'
 import Category from './views/category/Category'
 import Stock from './views/inventory/stock/Stock'
+import Menu from './views/menu/Menu'
+import Customers from './views/customers/Customers'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -68,6 +70,8 @@ const App = () => {
               <Route path="qr-code" element={<QRCode/>} />
               <Route path="category" element={<Category/>} />
               <Route path="stock" element={<Stock/>} />
+              <Route path="menu" element={<Menu/>} />
+              <Route path="customers" element={<Customers/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>

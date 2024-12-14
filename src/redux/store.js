@@ -6,6 +6,8 @@ import qrReducer from './slices/qrSlice';
 import categoryReducer from './slices/categorySlice';
 import supplierReducer from './slices/supplierSlice';
 import stockReducer from './slices/stockSlice';
+import menuReducer from './slices/menuSlice';
+import customerReducer from './slices/customerSlice';
 
 // Configure the Redux store
 const store = configureStore({
@@ -16,6 +18,8 @@ const store = configureStore({
     category: categoryReducer,
     suppliers: supplierReducer,
     inventories: stockReducer,
+    menuItems: menuReducer,
+    customers: customerReducer,
   },
 });
 
