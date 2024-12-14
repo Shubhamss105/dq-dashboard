@@ -111,6 +111,7 @@ const Customer = () => {
         </div>
       ) : (
         <DataGrid
+        style={{height: 'auto', width: '100%', backgroundColor: 'white'}}
         rows={customers?.map((customer) => ({
             ...customer,
             sno: generateSerialNumber(), 

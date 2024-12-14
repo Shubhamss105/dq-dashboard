@@ -258,7 +258,7 @@ export default function Category() {
 
       <CRow>
         {filteredCategories?.map((cat) => (
-          <CCol key={cat.id} xs="12" sm="6" md="4" lg="3" className="mb-4">
+          <CCol key={cat.id} xs="12" sm="6" md="4" lg="2" className="mb-4">
             <CCard className="shadow-sm border rounded">
               {/* Full-width Image */}
               <CCardImage
@@ -266,7 +266,7 @@ export default function Category() {
                 src={cat.categoryImage}
                 alt={cat.categoryName}
                 className="img-fluid"
-                style={{ height: '200px', objectFit: 'cover' }}
+                style={{ height: '150px', objectFit: 'cover' }}
               />
               {/* Card Body */}
               <CCardBody className="d-flex justify-content-between align-items-center">
