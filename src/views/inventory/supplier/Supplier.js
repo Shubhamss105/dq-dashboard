@@ -1,58 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { DataGrid } from '@mui/x-data-grid';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchSuppliers, addSupplier, updateSupplier, deleteSupplier } from '../../../redux/slices/supplierSlice';
-import { CButton, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CFormInput, CSpinner } from '@coreui/react';
-import { GridToolbar } from '@mui/x-data-grid';
+import React, { useState, useEffect } from 'react'
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarColumnsButton,
+  GridToolbarFilterButton,
+  GridToolbarDensitySelector,
+  GridToolbarExport,
+} from '@mui/x-data-grid'
+
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  fetchSuppliers,
+  addSupplier,
+  updateSupplier,
+  deleteSupplier,
+} from '../../../redux/slices/supplierSlice'
+import {
+  CButton,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+  CFormInput,
+  CSpinner,
+} from '@coreui/react'
+import { GridToolbar } from '@mui/x-data-grid'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash } from '@coreui/icons'
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 const Supplier = () => {
-  const dispatch = useDispatch();
-  const { suppliers, loading } = useSelector((state) => state.suppliers);
-  const restaurantId = useSelector((state) => state.auth.restaurantId);
+  const dispatch = useDispatch()
+  const { suppliers, loading } = useSelector((state) => state.suppliers)
+  const restaurantId = useSelector((state) => state.auth.restaurantId)
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [formData, setFormData] = useState({
     supplierName: '',
     email: '',
     phoneNumber: '',
     rawItem: '',
-  });
-  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  })
+  const [selectedSupplier, setSelectedSupplier] = useState(null)
 
   useEffect(() => {
     if (restaurantId) {
-      dispatch(fetchSuppliers({ restaurantId }));
+      dispatch(fetchSuppliers({ restaurantId }))
     }
-  }, [dispatch, restaurantId]);
+  }, [dispatch, restaurantId])
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
   const handleSaveSupplier = () => {
     dispatch(addSupplier({ restaurantId, ...formData }))
-    dispatch(fetchSuppliers({ restaurantId }));
+    dispatch(fetchSuppliers({ restaurantId }))
     // setModalVisible(false)
     setFormData({ supplierName: '', email: '', phoneNumber: '', rawItem: '' })
   }
-  const handleUpdateSupplier = () => {
-    dispatch(updateSupplier({ id: selectedSupplier.id, restaurantId, ...formData }));
-    dispatch(fetchSuppliers({ restaurantId }));
-    // setEditModalVisible(false);
-    setFormData({ supplierName: '', email: '', phoneNumber: '', rawItem: '' });
-  };
+  const handleUpdateSupplier = async () => {
+    try {
+      await dispatch(updateSupplier({ id: selectedSupplier.id, restaurantId, ...formData }))
+      await dispatch(fetchSuppliers({ restaurantId }))
+      // setEditModalVisible(false);
+      setFormData({ supplierName: '', email: '', phoneNumber: '', rawItem: '' })
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   const handleDeleteSupplier = () => {
-    dispatch(deleteSupplier({ id: selectedSupplier.id, restaurantId }));
-    dispatch(fetchSuppliers({ restaurantId }));
-    setDeleteModalVisible(false);
-  };
+    dispatch(deleteSupplier({ id: selectedSupplier.id, restaurantId }))
+    dispatch(fetchSuppliers({ restaurantId }))
+    setDeleteModalVisible(false)
+  }
 
   const exportToCSV = () => {
     const csvContent =
@@ -61,27 +87,38 @@ const Supplier = () => {
       '\n' +
       suppliers
         .map((row) => [row.id, row.supplierName, row.email, row.phoneNumber, row.rawItem].join(','))
-        .join('\n');
-    const link = document.createElement('a');
-    link.href = encodeURI(csvContent);
-    link.download = 'suppliers.csv';
-    link.click();
-  };
+        .join('\n')
+    const link = document.createElement('a')
+    link.href = encodeURI(csvContent)
+    link.download = 'suppliers.csv'
+    link.click()
+  }
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text('Suppliers Management', 10, 10);
-    const tableColumn = ['Supplier ID', 'Name', 'Email', 'Phone Number', 'Raw Items'];
+    const doc = new jsPDF()
+    doc.text('Suppliers Management', 10, 10)
+    const tableColumn = ['Supplier ID', 'Name', 'Email', 'Phone Number', 'Raw Items']
     const tableRows = suppliers.map((row) => [
       row.id,
       row.supplierName,
       row.email,
       row.phoneNumber,
       row.rawItem,
-    ]);
-    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 });
-    doc.save('suppliers.pdf');
-  };
+    ])
+    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 })
+    doc.save('suppliers.pdf')
+  }
+
+  function CustomToolbar() {
+    return (
+      <GridToolbarContainer>
+        <GridToolbarColumnsButton />
+        <GridToolbarFilterButton />
+        <GridToolbarDensitySelector />
+        <GridToolbarExport />
+      </GridToolbarContainer>
+    )
+  }
 
   const renderAddSupplierModal = () => (
     <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
@@ -127,10 +164,10 @@ const Supplier = () => {
         </CButton>
       </CModalFooter>
     </CModal>
-  );
+  )
 
   const renderEditSupplierModal = () => (
-    <CModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} centered>
+    <CModal visible={editModalVisible} onClose={() => setEditModalVisible(false)}>
       <CModalHeader>
         <CModalTitle>Edit Supplier</CModalTitle>
       </CModalHeader>
@@ -173,7 +210,7 @@ const Supplier = () => {
         </CButton>
       </CModalFooter>
     </CModal>
-  );
+  )
 
   const renderDeleteSupplierModal = () => (
     <CModal visible={deleteModalVisible} onClose={() => setDeleteModalVisible(false)}>
@@ -190,7 +227,7 @@ const Supplier = () => {
         </CButton>
       </CModalFooter>
     </CModal>
-  );
+  )
 
   const columns = [
     { field: 'id', headerName: 'Supplier ID', flex: 1 },
@@ -210,14 +247,14 @@ const Supplier = () => {
             color="secondary"
             size="sm"
             onClick={() => {
-              setSelectedSupplier(params.row);
+              setSelectedSupplier(params.row)
               setFormData({
                 supplierName: params.row.supplierName,
                 email: params.row.email,
                 phoneNumber: params.row.phoneNumber,
                 rawItem: params.row.rawItem,
-              });
-              setEditModalVisible(true);
+              })
+              setEditModalVisible(true)
             }}
           >
             <CIcon icon={cilPencil} />
@@ -226,8 +263,8 @@ const Supplier = () => {
             color="danger"
             size="sm"
             onClick={() => {
-              setSelectedSupplier(params.row);
-              setDeleteModalVisible(true);
+              setSelectedSupplier(params.row)
+              setDeleteModalVisible(true)
             }}
           >
             <CIcon icon={cilTrash} />
@@ -235,7 +272,7 @@ const Supplier = () => {
         </div>
       ),
     },
-  ];
+  ]
 
   return (
     <div style={{ padding: '20px' }}>
@@ -279,8 +316,8 @@ const Supplier = () => {
             pagination
             pageSize={5}
             rowsPerPageOptions={[5, 10, 20]}
-            components={{
-              Toolbar: GridToolbar,
+            slots={{
+              toolbar: CustomToolbar,
             }}
             disableSelectionOnClick
             autoHeight
@@ -292,7 +329,7 @@ const Supplier = () => {
       {renderEditSupplierModal()}
       {renderDeleteSupplierModal()}
     </div>
-  );
-};
+  )
+}
 
-export default Supplier;
+export default Supplier

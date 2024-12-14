@@ -3,8 +3,8 @@ import { CFooter } from '@coreui/react'
 
 const AppFooter = () => {
   return (
-    <CFooter className="px-4 mx-auto">
-      <div>
+    <CFooter>
+      <div className='mx-auto'>
         <a href="https://letsdq.com/" target="_blank" rel="noopener noreferrer">
           DQ
         </a>
