@@ -25,7 +25,6 @@ import {
   CFormInput,
   CSpinner,
 } from '@coreui/react'
-import { GridToolbar } from '@mui/x-data-grid'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash } from '@coreui/icons'
 import jsPDF from 'jspdf'

@@ -19,6 +19,7 @@ import { createQrCode, fetchQrCodes, deleteQrCode } from '../../redux/slices/qrS
 export default function QRCode() {
   const [modalVisible, setModalVisible] = useState(false)
   const [actionModalVisible, setActionModalVisible] = useState(false)
+  const [confirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false)
   const [selectedQr, setSelectedQr] = useState(null)
   const [tableNo, setTableNo] = useState('')
 
@@ -49,8 +50,8 @@ export default function QRCode() {
   const handleDelete = async () => {
     if (selectedQr) {
       await dispatch(deleteQrCode(selectedQr.id))
+      setConfirmDeleteModalVisible(false)
       setActionModalVisible(false)
-      // Refetch QR list to ensure UI updates
       dispatch(fetchQrCodes(restaurantId))
     }
   }
@@ -148,11 +149,35 @@ export default function QRCode() {
           <p className="text-center">Select an action for Table {selectedQr?.tableNumber}</p>
         </CModalBody>
         <CModalFooter>
-          <CButton color="danger" onClick={handleDelete}>
+          <CButton
+            color="danger"
+            onClick={() => {
+              setConfirmDeleteModalVisible(true)
+              setActionModalVisible(false)
+            }}
+          >
             Delete
           </CButton>
           <CButton color="primary" onClick={handleDownload}>
             Download
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+      {/* Confirmation Modal for Delete */}
+      <CModal visible={confirmDeleteModalVisible} onClose={() => setConfirmDeleteModalVisible(false)}>
+        <CModalHeader className="d-flex justify-content-between align-items-center">
+          <h2 className="fs-5 fw-bold">Confirm Delete</h2>
+        </CModalHeader>
+        <CModalBody>
+          <p className="text-center">Are you sure you want to delete the QR Code for Table {selectedQr?.tableNumber}?</p>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setConfirmDeleteModalVisible(false)}>
+            Cancel
+          </CButton>
+          <CButton color="danger" onClick={handleDelete}>
+            Confirm Delete
           </CButton>
         </CModalFooter>
       </CModal>

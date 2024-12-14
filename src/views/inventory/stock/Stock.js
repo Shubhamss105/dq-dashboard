@@ -210,6 +210,7 @@ const Stock = () => {
           Export to PDF
         </CButton>
       </div>
+      <div style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}>
       {inventoryLoading || supplierLoading ? (
         <div className="d-flex justify-content-center">
           <CSpinner color="primary" variant="grow" />
@@ -225,6 +226,7 @@ const Stock = () => {
           }}
         />
       )}
+      </div>
       {/* Add Inventory Modal */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader>
