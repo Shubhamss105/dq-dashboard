@@ -9,6 +9,7 @@ import {
 } from '@mui/x-data-grid'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchMenuItems, addMenuItem, updateMenuItem, deleteMenuItem } from '../../redux/slices/menuSlice'
+import CustomToolbar from '../../utils/CustomToolbar'
 import {
   CButton,
   CModal,
@@ -122,16 +123,6 @@ const Menu = () => {
     doc.save('menuItems.pdf')
   }
 
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <GridToolbarExport />
-      </GridToolbarContainer>
-    )
-  }
 
   const renderaddMenuItemModal = () => (
     <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>

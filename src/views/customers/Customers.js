@@ -1,18 +1,12 @@
 // Customer.js
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  DataGrid,
-  GridToolbarContainer,
-  GridToolbarColumnsButton,
-  GridToolbarFilterButton,
-  GridToolbarDensitySelector,
-  GridToolbarExport,
-} from '@mui/x-data-grid'
+import {DataGrid} from '@mui/x-data-grid'
 import { fetchCustomers } from '../../redux/slices/customerSlice'
 import { CButton, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilEnvelopeOpen, cilChatBubble } from '@coreui/icons'
+import CustomToolbar from '../../utils/CustomToolbar'
 
 const Customer = () => {
   const dispatch = useDispatch()
@@ -25,16 +19,6 @@ const Customer = () => {
     }
   }, [dispatch, restaurantId])
 
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <GridToolbarExport />
-      </GridToolbarContainer>
-    )
-  }
 
   const sendEmail = (email) => {
     window.location.href = `mailto:${email}?subject=Hello&body=Hi there!`

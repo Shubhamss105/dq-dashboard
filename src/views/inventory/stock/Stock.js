@@ -15,6 +15,7 @@ import {
   deleteInventory,
 } from '../../../redux/slices/stockSlice'
 import { fetchSuppliers } from '../../../redux/slices/supplierSlice'
+import CustomToolbar from '../../../utils/CustomToolbar';
 import {
   CButton,
   CModal,
@@ -174,18 +175,6 @@ const Stock = () => {
       ),
     },
   ]
-
-
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <GridToolbarExport />
-      </GridToolbarContainer>
-    );
-  }
 
   return (
     <div style={{ padding: '20px' }}>

@@ -15,6 +15,7 @@ import {
   updateSupplier,
   deleteSupplier,
 } from '../../../redux/slices/supplierSlice'
+import CustomToolbar from '../../../utils/CustomToolbar'
 import {
   CButton,
   CModal,
@@ -108,16 +109,6 @@ const Supplier = () => {
     doc.save('suppliers.pdf')
   }
 
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <GridToolbarExport />
-      </GridToolbarContainer>
-    )
-  }
 
   const renderAddSupplierModal = () => (
     <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>

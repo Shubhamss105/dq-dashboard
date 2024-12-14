@@ -16,6 +16,7 @@ import Category from './views/category/Category'
 import Stock from './views/inventory/stock/Stock'
 import Menu from './views/menu/Menu'
 import Customers from './views/customers/Customers'
+import Transactions from './views/transactions/Transactions'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -72,6 +73,7 @@ const App = () => {
               <Route path="stock" element={<Stock/>} />
               <Route path="menu" element={<Menu/>} />
               <Route path="customers" element={<Customers/>} />
+              <Route path="transactions" element={<Transactions/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>
