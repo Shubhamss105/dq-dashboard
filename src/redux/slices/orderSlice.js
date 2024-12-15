@@ -60,10 +60,12 @@ export const updateOrderStatus = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
+      console.error('Error in API:', error.response?.data); 
       return rejectWithValue(error.response?.data?.error || 'Failed to change order status');
     }
   }
 );
+
 
 // Fetch orders with notification status 0 for a restaurant
 export const fetchNotificationOrders = createAsyncThunk(
@@ -169,31 +171,28 @@ const orderSlice = createSlice({
         toast.error('Failed to fetch order details.');
       });
 
-   // Change order status
+// Change order status
 builder
-.addCase(updateOrderStatus.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-.addCase(updateOrderStatus.fulfilled, (state, action) => {
-  state.loading = false;
-  const updatedOrder = action.payload.data;
-  
-  // Ensure the correct field is being matched, likely `order_id` instead of `id`
-  const index = state.orders.findIndex((order) => order.order_id === updatedOrder.order_id);
+  .addCase(updateOrderStatus.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(updateOrderStatus.fulfilled, (state, action) => {
+    state.loading = false;
+    const updatedOrder = action.payload.order;
 
-  // Update the status of the order in the state
-  if (index !== -1) {
-    state.orders[index].status = updatedOrder.status;
-  }
-
-  toast.success('Order status updated successfully!');
+    const index = state.orders.findIndex((order) => order.order_id === updatedOrder.id);
+    if (index !== -1) {
+        state.orders[index] = { ...state.orders[index], status: updatedOrder.status };
+    } else {
+        console.log('Order not found.');
+    }
 })
-.addCase(updateOrderStatus.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload;
-  toast.error('Failed to change order status.');
-});
+  .addCase(updateOrderStatus.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+    toast.error('Failed to change order status.');
+  });
 
 
     // Update notification status

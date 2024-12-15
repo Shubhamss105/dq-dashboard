@@ -5,6 +5,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import { fetchOrders, updateOrderStatus } from '../../redux/slices/orderSlice'
 import { CButton, CSpinner } from '@coreui/react'
 import CustomToolbar from '../../utils/CustomToolbar'
+import { toast } from 'react-toastify'
 
 const Order = () => {
   const dispatch = useDispatch()
@@ -19,40 +20,43 @@ const Order = () => {
     }
   }, [dispatch, restaurantId])
 
-// Handle order status update
-const handleStatusChange = async (id, status) => {
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await dispatch(updateOrderStatus({ id: orderId, status: newStatus }));
+      // No need to re-fetch all orders
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
   
-  await dispatch(updateOrderStatus({ id, status }));
-
-  await dispatch(fetchOrders({ restaurantId }));
-
-  closeSidebar();
-};
-
+  
   
 
-  const closeSidebar = () => {
-    setSelectedOrder(null)
-  }
+  const closeSidebar = () => setSelectedOrder(null)
 
   // Generate serial numbers
-  let serialCounter = 1
-  const generateSerialNumber = () => serialCounter++
+  const generateSerialNumber = (() => {
+    let serialCounter = 1
+    return () => serialCounter++
+  })()
+
+  // Style based on status
+  const getStatusStyle = (status) => ({
+    padding: '2px 10px',
+    borderRadius: '15px',
+    color: 'white',
+    textAlign: 'center',
+    backgroundColor:
+      status === 'complete'
+        ? '#4CAF50'
+        : status === 'reject'
+        ? '#F44336'
+        : '#FFC107',
+  })
 
   const columns = [
-    {
-      field: 'sno',
-      headerName: 'S.No.',
-      flex: 0.5,
-      headerClassName: 'header-style',
-      valueGetter: (params) => params.row.sno,
-    },
-    {
-      field: 'order_id',
-      headerName: 'Order Number',
-      flex: 1,
-      headerClassName: 'header-style',
-    },
+    { field: 'sno', headerName: 'S.No.', flex: 0.5, headerClassName: 'header-style' },
+    { field: 'order_id', headerName: 'Order Number', flex: 1, headerClassName: 'header-style' },
     {
       field: 'items',
       headerName: 'Items',
@@ -70,51 +74,25 @@ const handleStatusChange = async (id, status) => {
       headerClassName: 'header-style',
       valueGetter: (params) => params.row.user?.name || 'N/A',
     },
-    {
-      field: 'table_number',
-      headerName: 'Table Number',
-      flex: 1,
-      headerClassName: 'header-style',
-    },
+    { field: 'table_number', headerName: 'Table Number', flex: 1, headerClassName: 'header-style' },
     {
       field: 'status',
       headerName: 'Status',
       flex: 1,
       headerClassName: 'header-style',
       renderCell: (params) => (
-        <div
-          style={{
-            padding: '2px 10px',
-            borderRadius: '15px',
-            color: 'white',
-            textAlign: 'center',
-            backgroundColor:
-              params.value === 'complete'
-                ? '#4CAF50'
-                : params.value === 'reject'
-                  ? '#F44336'
-                  : '#FFC107',
-          }}
-        >
-          {params.value.charAt(0).toUpperCase() + params.value.slice(1)}{' '}
-          {/* Capitalize the first letter */}
+        <div style={getStatusStyle(params.value)}>
+          {params.value.charAt(0).toUpperCase() + params.value.slice(1)}
         </div>
       ),
     },
-
-    {
-      field: 'created_at',
-      headerName: 'Datae',
-      flex: 1,
-      headerClassName: 'header-style',
-    },
-
+    { field: 'created_at', headerName: 'Date', flex: 1, headerClassName: 'header-style' },
     {
       field: 'total',
       headerName: 'Total',
       flex: 1,
       headerClassName: 'header-style',
-      valueGetter: (params) => `₹${params.row.total}`,
+      valueGetter: (params) => `₹${params.row.total || 0}`,
     },
     {
       field: 'actions',
@@ -169,13 +147,12 @@ const handleStatusChange = async (id, status) => {
             width: '30%',
             backgroundColor: '#f9f9f9',
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
-            zIndex: 1050, // Ensures it overlays other elements
+            zIndex: 1050,
             borderLeft: '1px solid #ccc',
             overflowY: 'auto',
             padding: '20px',
           }}
         >
-          {/* Header */}
           <div
             style={{
               display: 'flex',
@@ -186,7 +163,9 @@ const handleStatusChange = async (id, status) => {
               marginBottom: '20px',
             }}
           >
-            <h5 style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Order Details: #{selectedOrder.order_id}</h5>
+            <h5 style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
+              Order Details: #{selectedOrder.order_id}
+            </h5>
             <button
               onClick={closeSidebar}
               style={{
@@ -200,8 +179,6 @@ const handleStatusChange = async (id, status) => {
               &times;
             </button>
           </div>
-
-          {/* Content */}
           <div>
             <p>
               <strong>Order Number:</strong> {selectedOrder.order_id}
@@ -216,7 +193,7 @@ const handleStatusChange = async (id, status) => {
               <strong>Status:</strong> {selectedOrder.status}
             </p>
             <p>
-              <strong>Total:</strong> ₹{selectedOrder.total}
+              <strong>Total:</strong> ₹{selectedOrder.total || 0}
             </p>
             <p>
               <strong>Items:</strong>
@@ -229,8 +206,6 @@ const handleStatusChange = async (id, status) => {
               ))}
             </ul>
           </div>
-
-          {/* Footer Buttons */}
           <div
             style={{
               display: 'flex',
