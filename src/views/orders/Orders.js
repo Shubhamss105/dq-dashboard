@@ -23,7 +23,7 @@ const Order = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await dispatch(updateOrderStatus({ id: orderId, status: newStatus }));
-      // No need to re-fetch all orders
+      closeSidebar();
     } catch (error) {
       console.error('Error updating status:', error);
     }

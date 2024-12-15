@@ -1,11 +1,10 @@
-// Customer.js
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {DataGrid} from '@mui/x-data-grid'
-import { fetchCustomers } from '../../redux/slices/customerSlice'
-import { CButton, CSpinner } from '@coreui/react'
+import { DataGrid } from '@mui/x-data-grid'
+import { fetchCustomers, deleteCustomer } from '../../redux/slices/customerSlice'
+import { CButton, CSpinner, CModal, CModalHeader, CModalBody, CModalFooter } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilEnvelopeOpen, cilChatBubble } from '@coreui/icons'
+import { cilEnvelopeOpen, cilChatBubble, cilTrash } from '@coreui/icons'
 import CustomToolbar from '../../utils/CustomToolbar'
 
 const Customer = () => {
@@ -13,12 +12,14 @@ const Customer = () => {
   const { customers, loading } = useSelector((state) => state.customers)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
 
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null)
+
   useEffect(() => {
     if (restaurantId) {
       dispatch(fetchCustomers({ restaurantId }))
     }
   }, [dispatch, restaurantId])
-
 
   const sendEmail = (email) => {
     window.location.href = `mailto:${email}?subject=Hello&body=Hi there!`
@@ -29,21 +30,35 @@ const Customer = () => {
     window.open(`https://wa.me/${sanitizedPhone}?text=Hi!`, '_blank')
   }
 
+  const handleDelete = () => {
+    if (selectedCustomerId) {
+      dispatch(deleteCustomer({ id: selectedCustomerId })).then(() => {
+        setDeleteModalVisible(false);
+        setSelectedCustomerId(null);
+      });
+    }
+  };
+  
+
+  const openDeleteModal = (id) => {
+    setSelectedCustomerId(id)
+    setDeleteModalVisible(true)
+  }
 
   // Static method to generate serial numbers
-  let serialCounter = 1;
+  let serialCounter = 1
   const generateSerialNumber = () => {
-    return serialCounter++;
-  };
+    return serialCounter++
+  }
 
   const columns = [
-    { 
-        field: 'sno', 
-        headerName: 'S.No.', 
-        flex: 0.5, 
-        headerClassName: 'header-style',
-        valueGetter: (params) => params.row.sno, // Use the `sno` from rows
-      },
+    {
+      field: 'sno',
+      headerName: 'S.No.',
+      flex: 0.5,
+      headerClassName: 'header-style',
+      valueGetter: (params) => params.row.sno, // Use the `sno` from rows
+    },
     {
       field: 'name',
       headerName: 'Name',
@@ -75,7 +90,7 @@ const Customer = () => {
     {
       field: 'actions',
       headerName: 'Actions',
-      flex: 1,
+      flex: 1.5,
       headerClassName: 'header-style',
       sortable: false,
       filterable: false,
@@ -85,7 +100,6 @@ const Customer = () => {
             color="primary"
             size="sm"
             onClick={() => sendEmail(params.row.email)}
-            // disabled={!params.row.email || params.row.email === 'N/A'}
           >
             <CIcon icon={cilEnvelopeOpen} /> Email
           </CButton>
@@ -93,9 +107,15 @@ const Customer = () => {
             color="success"
             size="sm"
             onClick={() => sendWhatsApp(params.row.phoneNumber)}
-            // disabled={!params.row.phoneNumber || params.row.phoneNumber === 'N/A'}
           >
             <CIcon icon={cilChatBubble} /> WhatsApp
+          </CButton>
+          <CButton
+            color="danger"
+            size="sm"
+            onClick={() => openDeleteModal(params.row.id)}
+          >
+            <CIcon icon={cilTrash} /> Delete
           </CButton>
         </div>
       ),
@@ -111,10 +131,10 @@ const Customer = () => {
         </div>
       ) : (
         <DataGrid
-        style={{height: 'auto', width: '100%', backgroundColor: 'white'}}
-        rows={customers?.map((customer) => ({
+          style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
+          rows={customers?.map((customer) => ({
             ...customer,
-            sno: generateSerialNumber(), 
+            sno: generateSerialNumber(),
           }))}
           columns={columns}
           pageSize={10}
@@ -128,6 +148,26 @@ const Customer = () => {
           }}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <CModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        backdrop="static"
+      >
+        <CModalHeader>Confirm Deletion</CModalHeader>
+        <CModalBody>
+          Are you sure you want to delete this customer?
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setDeleteModalVisible(false)}>
+            Cancel
+          </CButton>
+          <CButton color="danger" onClick={handleDelete}>
+            Delete
+          </CButton>
+        </CModalFooter>
+      </CModal>
     </div>
   )
 }
