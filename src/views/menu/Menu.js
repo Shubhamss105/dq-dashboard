@@ -1,97 +1,92 @@
 import React, { useState, useEffect } from 'react'
-import {
-  DataGrid,
-  GridToolbarContainer,
-  GridToolbarColumnsButton,
-  GridToolbarFilterButton,
-  GridToolbarDensitySelector,
-  GridToolbarExport,
-} from '@mui/x-data-grid'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchMenuItems, addMenuItem, updateMenuItem, deleteMenuItem } from '../../redux/slices/menuSlice'
-import CustomToolbar from '../../utils/CustomToolbar'
+import { useSelector, useDispatch } from 'react-redux'
 import {
   CButton,
   CModal,
-  CModalBody,
-  CModalFooter,
   CModalHeader,
   CModalTitle,
+  CModalBody,
+  CModalFooter,
+  CForm,
   CFormInput,
+  CFormSelect,
+  CRow,
+  CCol,
   CSpinner,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash } from '@coreui/icons'
-import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import {DataGrid} from '@mui/x-data-grid'
+import CustomToolbar from '../../utils/CustomToolbar'
+import { fetchCategories } from '../../redux/slices/categorySlice'
+import { fetchInventories } from '../../redux/slices/stockSlice'
+import { addMenuItem,deleteMenuItem,fetchMenuItems } from '../../redux/slices/menuSlice'
 
 const Menu = () => {
   const dispatch = useDispatch()
   const { menuItems, loading } = useSelector((state) => state.menuItems)
+  const { categories, loading: categoryLoading } = useSelector((state) => state.category)
+  const { inventories, loading: inventoryLoading } = useSelector((state) => state.inventories)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
+    const token = useSelector((state) => state.auth.token)
 
   const [modalVisible, setModalVisible] = useState(false)
-  const [editModalVisible, setEditModalVisible] = useState(false)
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [formData, setFormData] = useState({
     itemName: '',
     categoryId: '',
     itemImage: null,
     price: '',
+    stock: [{ inventoryId: '', quantity: '' }],
   })
-  const [selectedMenu, setSelectedMenu] = useState(null)
   const [previewImage, setPreviewImage] = useState(null)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
 
   useEffect(() => {
-    if (restaurantId) {
-      dispatch(fetchMenuItems({ restaurantId }))
-    }
-  }, [dispatch, restaurantId])
+    dispatch(fetchCategories({restaurantId,token}))
+    dispatch(fetchInventories({restaurantId}))
+  }, [dispatch])
 
-  console.log('menuItems',menuItems)
-
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }))
   }
 
   const handleImageChange = (e) => {
     const file = e.target.files[0]
-    setFormData({ ...formData, itemImage: file })
+    setFormData((prevState) => ({
+      ...prevState,
+      itemImage: file,
+    }))
     setPreviewImage(URL.createObjectURL(file))
   }
 
-  const handleSaveMenu = async () => {
-    const menuData = new FormData()
-    menuData.append('restaurantId', restaurantId)
-    menuData.append('itemName', formData.itemName)
-    menuData.append('categoryId', formData.categoryId)
-    menuData.append('itemImage', formData.itemImage)
-    menuData.append('price', formData.price)
-
-    await dispatch(addMenuItem(menuData))
-    dispatch(fetchMenuItems({ restaurantId }))
-    setModalVisible(false)
-    setFormData({ itemName: '', categoryId: '', itemImage: null, price: '' })
-    setPreviewImage(null)
+  const handleStockChange = (index, field, value) => {
+    const updatedStock = [...formData.stock]
+    updatedStock[index][field] = value
+    setFormData((prevState) => ({
+      ...prevState,
+      stock: updatedStock,
+    }))
   }
 
-  const handleupdateMenuItem = async () => {
-    const menuData = new FormData()
-    menuData.append('id', selectedMenu.id)
-    menuData.append('restaurantId', restaurantId)
-    menuData.append('itemName', formData.itemName)
-    menuData.append('categoryId', formData.categoryId)
-    if (formData.itemImage instanceof File) {
-      menuData.append('itemImage', formData.itemImage)
-    }
-    menuData.append('price', formData.price)
+  const addStockField = () => {
+    setFormData((prevState) => ({
+      ...prevState,
+      stock: [...prevState.stock, { inventoryId: '', quantity: '' }],
+    }))
+  }
 
-    await dispatch(updateMenuItem(menuData))
-    dispatch(fetchMenuItems({ restaurantId }))
-    setEditModalVisible(false)
-    setFormData({ itemName: '', categoryId: '', itemImage: null, price: '' })
+  const handleCancel = () => {
+    setFormData({
+      itemName: '',
+      categoryId: '',
+      itemImage: null,
+      price: '',
+      stock: [{ inventoryId: '', quantity: '' }],
+    })
     setPreviewImage(null)
+    setModalVisible(false)
   }
 
   const handledeleteMenuItem = () => {
@@ -100,111 +95,107 @@ const Menu = () => {
     setDeleteModalVisible(false)
   }
 
-  const exportToCSV = () => {
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      ['Menu ID,Item Name,Category ID,Price,Image URL'].join(',') +
-      '\n' +
-      menuItems
-        ?.map((row) => [row.id, row.itemName, row.categoryId, row.price, row.itemImage].join(','))
-        .join('\n')
-    const link = document.createElement('a')
-    link.href = encodeURI(csvContent)
-    link.download = 'menuItems.csv'
-    link.click()
+  const handleAddMenuItem = () => {
+    const formDataToSubmit = {itemName,itemImage,price,categoryId,restaurantId,stock}
+    // formDataToSubmit.append('itemName', formData.itemName)
+    // formDataToSubmit.append('categoryId', formData.categoryId)
+    // formDataToSubmit.append('itemImage', formData.itemImage)
+    // formDataToSubmit.append('price', formData.price)
+    // formDataToSubmit.append('stock', JSON.stringify(formData.stock))
+    dispatch(addMenuItem(formDataToSubmit))
+    handleCancel()
   }
 
-  const exportToPDF = () => {
-    const doc = new jsPDF()
-    doc.text('Menu Management', 10, 10)
-    const tableColumn = ['Menu ID', 'Item Name', 'Category ID', 'Price']
-    const tableRows = menuItems?.map((row) => [row.id, row.itemName, row.categoryId, row.price])
-    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 })
-    doc.save('menuItems.pdf')
-  }
-
-
-  const renderaddMenuItemModal = () => (
-    <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+  const renderAddMenuItemModal = () => (
+    <CModal visible={modalVisible} onClose={handleCancel}>
       <CModalHeader>
         <CModalTitle>Add Menu Item</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <CFormInput
-          className="mb-3"
-          placeholder="Item Name"
-          name="itemName"
-          value={formData.itemName}
-          onChange={handleChange}
-        />
-        <CFormInput
-          className="mb-3"
-          placeholder="Category ID"
-          name="categoryId"
-          value={formData.categoryId}
-          onChange={handleChange}
-        />
-        <CFormInput className="mb-3" type="file" name="itemImage" onChange={handleImageChange} />
-        {previewImage && <img src={previewImage} alt="Preview" style={{ maxWidth: '100%' }} />}
-        <CFormInput
-          className="mb-3"
-          placeholder="Price"
-          name="price"
-          value={formData.price}
-          onChange={handleChange}
-        />
+        <CForm>
+          <CFormInput
+            type="text"
+            name="itemName"
+            label="Item Name"
+            value={formData.itemName}
+            onChange={handleInputChange}
+            placeholder="Enter item name"
+          />
+          <CFormSelect
+            name="categoryId"
+            label="Category Name"
+            value={formData.categoryId}
+            onChange={handleInputChange}
+          >
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </CFormSelect>
+          <CFormInput
+            type="file"
+            label="Item Image"
+            onChange={handleImageChange}
+            accept="image/*"
+          />
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="img-thumbnail mt-2"
+              style={{ height: '100px' }}
+            />
+          )}
+          <CFormInput
+            type="number"
+            name="price"
+            label="Price"
+            value={formData.price}
+            onChange={handleInputChange}
+            placeholder="Enter price"
+          />
+          {formData.stock.map((stock, index) => (
+            <CRow key={index} className="align-items-center mb-2">
+              <CCol xs={6}>
+                <CFormSelect
+                  value={stock.inventoryId}
+                  onChange={(e) => handleStockChange(index, 'inventoryId', e.target.value)}
+                >
+                  <option value="">Select Inventory</option>
+                  {inventories.map((inventory) => (
+                    <option key={inventory.id} value={inventory.id}>
+                      {inventory.name}
+                    </option>
+                  ))}
+                </CFormSelect>
+              </CCol>
+              <CCol xs={4}>
+                <CFormInput
+                  type="number"
+                  value={stock.quantity}
+                  onChange={(e) => handleStockChange(index, 'quantity', e.target.value)}
+                  placeholder="Quantity"
+                />
+              </CCol>
+              <CCol xs={2}>
+                {index === formData.stock.length - 1 && (
+                  <CButton color="success" onClick={addStockField}>
+                    Add
+                  </CButton>
+                )}
+              </CCol>
+            </CRow>
+          ))}
+        </CForm>
       </CModalBody>
       <CModalFooter>
-        <CButton color="secondary" onClick={() => setModalVisible(false)}>
-          Close
+        <CButton color="secondary" onClick={handleCancel}>
+          Cancel
         </CButton>
-        <CButton color="primary" onClick={handleSaveMenu} disabled={loading}>
-          {loading ? 'Saving...' : 'Save'}
-        </CButton>
-      </CModalFooter>
-    </CModal>
-  )
-
-  const renderEditMenuModal = () => (
-    <CModal visible={editModalVisible} onClose={() => setEditModalVisible(false)}>
-      <CModalHeader>
-        <CModalTitle>Edit Menu Item</CModalTitle>
-      </CModalHeader>
-      <CModalBody>
-        <CFormInput
-          className="mb-3"
-          placeholder="Item Name"
-          name="itemName"
-          value={formData.itemName}
-          onChange={handleChange}
-        />
-        <CFormInput
-          className="mb-3"
-          placeholder="Category ID"
-          name="categoryId"
-          value={formData.categoryId}
-          onChange={handleChange}
-        />
-        <CFormInput className="mb-3" type="file" name="itemImage" onChange={handleImageChange} />
-        {previewImage ? (
-          <img src={previewImage} alt="Preview" style={{ maxWidth: '100%' }} />
-        ) : (
-          <img src={selectedMenu?.itemImage} alt="Current" style={{ maxWidth: '100%' }} />
-        )}
-        <CFormInput
-          className="mb-3"
-          placeholder="Price"
-          name="price"
-          value={formData.price}
-          onChange={handleChange}
-        />
-      </CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={() => setEditModalVisible(false)}>
-          Close
-        </CButton>
-        <CButton color="primary" onClick={handleupdateMenuItem} disabled={loading}>
-          {loading ? 'Saving...' : 'Save Changes'}
+        <CButton color="primary" onClick={handleAddMenuItem}>
+          Add Menu Item
         </CButton>
       </CModalFooter>
     </CModal>
@@ -294,14 +285,6 @@ const Menu = () => {
                Add Menu
              </CButton>
            </div>
-           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-             <CButton color="info" onClick={exportToCSV}>
-               Export to CSV
-             </CButton>
-             <CButton color="secondary" onClick={exportToPDF}>
-               Export to PDF
-             </CButton>
-           </div>
       <div style={{height: 'auto', width: '100%', backgroundColor: 'white' }}>
         <DataGrid
           rows={menuItems}
@@ -313,8 +296,8 @@ const Menu = () => {
           slots={{ Toolbar: CustomToolbar }}
         />
       </div>
-      {renderaddMenuItemModal()}
-      {renderEditMenuModal()}
+      {renderAddMenuItemModal()}
+      {/* {renderEditMenuModal()} */}
       {renderdeleteMenuItemModal()}
     </div>
   )

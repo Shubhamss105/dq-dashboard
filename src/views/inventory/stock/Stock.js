@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import {
-    DataGrid,
-    GridToolbarContainer,
-    GridToolbarColumnsButton,
-    GridToolbarFilterButton,
-    GridToolbarDensitySelector,
-    GridToolbarExport,
+    DataGrid
   } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -27,7 +22,6 @@ import {
   CSpinner,
   CFormSelect,
 } from '@coreui/react'
-import { GridToolbar } from '@mui/x-data-grid'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash } from '@coreui/icons'
 import jsPDF from 'jspdf'

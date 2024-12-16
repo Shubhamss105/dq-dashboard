@@ -17,6 +17,8 @@ import Stock from './views/inventory/stock/Stock'
 import Menu from './views/menu/Menu'
 import Customers from './views/customers/Customers'
 import Transactions from './views/transactions/Transactions'
+import POS from './views/pos/POS'
+import POSTableContent from './views/pos/POSTableContent'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -74,6 +76,8 @@ const App = () => {
               <Route path="menu" element={<Menu/>} />
               <Route path="customers" element={<Customers/>} />
               <Route path="transactions" element={<Transactions/>} />
+              <Route path="pos" element={<POS/>} />
+              <Route path="pos/tableNumber/:tableNumber" element={<POSTableContent/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>

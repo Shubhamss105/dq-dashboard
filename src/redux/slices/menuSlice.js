@@ -27,7 +27,7 @@ export const fetchMenuItems = createAsyncThunk(
 // Add a new menu item
 export const addMenuItem = createAsyncThunk(
   'menu/addMenuItem',
-  async ({ restaurantId, itemName, price, description, category, image }, { rejectWithValue }) => {
+  async ({itemName,itemImage,price,categoryId,restaurantId,stock  }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('authToken');
       const headers = {
@@ -40,9 +40,10 @@ export const addMenuItem = createAsyncThunk(
       formData.append('itemName', itemName);
       formData.append('price', price);
       formData.append('description', description);
-      formData.append('category', category);
-      if (image) {
-        formData.append('image', image);
+      formData.append('categoryId', categoryId);
+      formData.append('categoryId', categoryId);
+      if (itemImage) {
+        formData.append('itemImage', itemImage);
       }
 
       const response = await axios.post(`${BASE_URL}/menu`, formData, { headers });
