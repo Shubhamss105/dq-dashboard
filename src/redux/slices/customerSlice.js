@@ -1,3 +1,4 @@
+// Import necessary modules
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -16,6 +17,24 @@ export const fetchCustomers = createAsyncThunk(
   }
 );
 
+// Add customer
+export const addCustomer = createAsyncThunk(
+  'customers/addCustomer',
+  async (customerData, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+      const response = await axios.post(`${BASE_URL}/customer`, customerData, { headers });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 // Delete customer
 export const deleteCustomer = createAsyncThunk(
   'customers/deleteCustomer',
@@ -25,7 +44,7 @@ export const deleteCustomer = createAsyncThunk(
       const headers = {
         Authorization: `Bearer ${token}`,
       };
-      const response = await axios.delete(`${BASE_URL}/customer/${id}`,{headers});
+      const response = await axios.delete(`${BASE_URL}/customer/${id}`, { headers });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -55,7 +74,21 @@ const customerSlice = createSlice({
       .addCase(fetchCustomers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error('Failed to fetch Customers.');
+        toast.error('Failed to fetch customers.');
+      })
+      .addCase(addCustomer.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addCustomer.fulfilled, (state, action) => {
+        state.loading = false;
+        state.customers.push(action.payload);
+        toast.success('Customer added successfully.');
+      })
+      .addCase(addCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        toast.error('Failed to add customer.');
       })
       .addCase(deleteCustomer.pending, (state) => {
         state.loading = true;
@@ -68,11 +101,11 @@ const customerSlice = createSlice({
           (customer) => customer.id !== deletedCustomerId
         );
         toast.success('Customer deleted successfully.');
-      })      
+      })
       .addCase(deleteCustomer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error('Failed to delete Customer.');
+        toast.error('Failed to delete customer.');
       });
   },
 });
