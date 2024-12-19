@@ -18,13 +18,14 @@ import {
   CModalFooter,
   CForm,
   CFormTextarea,
-  CSpinner
+  CSpinner,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { useParams } from 'react-router-dom'
 import { cilPlus, cilTrash, cilSearch } from '@coreui/icons'
 import { fetchMenuItems } from '../../redux/slices/menuSlice'
 import { fetchCustomers, addCustomer } from '../../redux/slices/customerSlice'
+import { createTransaction } from '../../redux/slices/transactionSlice'
 import { useDispatch, useSelector } from 'react-redux'
 
 const POSTableContent = () => {
@@ -167,9 +168,9 @@ const POSTableContent = () => {
   const handlePaymentSubmit = async () => {
     const payload = {
       user_id: 1,
-      items: cart.map((item) => ({
-        item_id: item.id,
-        name: item.name,
+      items: cart?.map((item) => ({
+        itemId: item.id,
+        itemName: item.itemName,
         price: item.price,
         quantity: item.quantity,
       })),
@@ -178,32 +179,23 @@ const POSTableContent = () => {
       sub_total: calculateSubtotal(),
       total: calculateTotal(),
       type: paymentType,
-      restaurantId: 'R1728231298',
+      restaurantId: restaurantId,
+      tableNumber: tableNumber
     }
 
     if (paymentType === 'split') {
       payload.split_details = { ...splitPercentages }
     }
 
-    try {
-      const response = await fetch('/api/payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (response.ok) {
-        alert('Payment submitted successfully!')
+    dispatch(createTransaction(payload))
+      .unwrap()
+      .then(() => {
         setShowPaymentModal(false)
-      } else {
-        alert('Failed to submit payment.')
-      }
-    } catch (error) {
-      console.error('Error submitting payment:', error)
-      alert('An error occurred. Please try again.')
-    }
+        clearCart()
+      })
+      .catch((error) => {
+        console.error('Error submitting payment:', error)
+      })
   }
 
   const AddCustomerModal = () => {
