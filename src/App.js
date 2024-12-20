@@ -19,6 +19,7 @@ import Customers from './views/customers/Customers'
 import Transactions from './views/transactions/Transactions'
 import POS from './views/pos/POS'
 import POSTableContent from './views/pos/POSTableContent'
+import Account from './views/account/Account'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -78,6 +79,7 @@ const App = () => {
               <Route path="transactions" element={<Transactions/>} />
               <Route path="pos" element={<POS/>} />
               <Route path="pos/tableNumber/:tableNumber" element={<POSTableContent/>} />
+              <Route path="account" element={<Account/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>

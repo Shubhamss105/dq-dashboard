@@ -55,6 +55,7 @@ const POS = () => {
                 marginBottom: '1rem',
                 cursor: 'pointer',
               }}
+              onClick={() => navigate('/pos/tableNumber/0')}
             >
               <div className="fw-bold">Takeaway</div>
             </CContainer>

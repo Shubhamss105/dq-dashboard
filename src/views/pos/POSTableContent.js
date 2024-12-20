@@ -287,12 +287,12 @@ const POSTableContent = () => {
   }
 
   return (
-    <CContainer fluid className="p-4">
+    <CContainer fluid className="p-4 shadow-shadow-lg bg-white">
       <CRow>
         {/* Left Side: Products */}
         <CCol md={8} sm={12} className="mb-4">
-          <CCard className="shadow-sm">
-            <CCardBody>
+          <CContainer>
+            <CContainer>
               <CInputGroup className="mb-3">
                 <CFormInput
                   placeholder="Search"
@@ -334,8 +334,8 @@ const POSTableContent = () => {
                   </div>
                 ))
               )}
-            </CCardBody>
-          </CCard>
+            </CContainer>
+          </CContainer>
         </CCol>
 
         {/* Right Side: Cart */}
@@ -481,7 +481,7 @@ const POSTableContent = () => {
             <option value="split">Split</option>
           </CFormSelect>
 
-          {paymentType === 'split' && (
+          {/* {paymentType === 'split' && (
             <div className="mt-3">
               <CFormInput
                 type="number"
@@ -519,7 +519,7 @@ const POSTableContent = () => {
                 }
               />
             </div>
-          )}
+          )} */}
         </CModalBody>
         <CModalFooter>
           <CButton color="primary" onClick={handlePaymentSubmit}>
