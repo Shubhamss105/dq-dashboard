@@ -22,26 +22,27 @@ export const getRestaurantProfile = createAsyncThunk(
 
 // PUT API: Update restaurant profile
 export const updateRestaurantProfile = createAsyncThunk(
-  'restaurantProfile/updateRestaurantProfile',
-  async ({ restaurantId, profileData }, { rejectWithValue }) => {
-    try {
-      const token = localStorage.getItem('authToken');
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      };
-      const response = await axios.put(`${BASE_URL}/profile/${restaurantId}`, profileData, { headers });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'Something went wrong');
+    'restaurantProfile/updateRestaurantProfile',
+    async ({ id, profileData }, { rejectWithValue }) => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        };
+        // Send restaurantId in the body
+        const response = await axios.post(`${BASE_URL}/profile/${id}`, profileData, { headers });
+        return response.data;
+      } catch (error) {
+        return rejectWithValue(error.response?.data || 'Something went wrong');
+      }
     }
-  }
-);
+  );
 
 const restaurantProfileSlice = createSlice({
   name: 'restaurantProfile',
   initialState: {
-    profile: null,
+    restaurantProfile: null,
     loading: false,
     error: null,
   },
@@ -55,7 +56,7 @@ const restaurantProfileSlice = createSlice({
       })
       .addCase(getRestaurantProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.profile = action.payload;
+        state.restaurantProfile = action.payload;
       })
       .addCase(getRestaurantProfile.rejected, (state, action) => {
         state.loading = false;
@@ -70,7 +71,7 @@ const restaurantProfileSlice = createSlice({
       })
       .addCase(updateRestaurantProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.profile = action.payload;
+        state.restaurantProfile = action.payload;
         toast.success('Profile updated successfully.');
       })
       .addCase(updateRestaurantProfile.rejected, (state, action) => {

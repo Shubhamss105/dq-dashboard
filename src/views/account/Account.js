@@ -1,106 +1,139 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { CContainer, CRow, CCol, CButton, CFormInput, CImage } from '@coreui/react';
+import {
+  CCard,
+  CCardHeader,
+  CCardBody,
+  CCardTitle,
+  CRow,
+  CCol,
+  CButton,
+  CFormInput,
+  CFormLabel,
+  CImage,
+  CSpinner,
+} from '@coreui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getRestaurantProfile, updateRestaurantProfile } from '../../redux/slices/restaurantProfileSlice';
 
-const Account = () => {
+export default function Account() {
   const dispatch = useDispatch();
-  const { restaurantProfile, loading } = useSelector((state) => state.restaurantProfile);
+  const [profileData, setProfileData] = useState({});
+  const [editingField, setEditingField] = useState(null);
+  const [editValue, setEditValue] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const [editableField, setEditableField] = useState(null);
-  const [updatedValue, setUpdatedValue] = useState('');
+  const { restaurantProfile, loading } = useSelector((state) => state.restaurantProfile);
+  const restaurantId = useSelector((state) => state.auth.restaurantId);
+  const id= restaurantProfile?.id
 
   useEffect(() => {
-    // Fetch restaurant profile on component mount
-    dispatch(getRestaurantProfile({ restaurantId: 'R1728231298' }));
-  }, [dispatch]);
+    dispatch(getRestaurantProfile({ restaurantId })).then(({ payload }) => {
+      setProfileData(payload);
+    });
+  }, [dispatch, restaurantId]);
 
-  const handleEdit = (field, value) => {
-    setEditableField(field);
-    setUpdatedValue(value);
+  const handleEdit = (field) => {
+    setEditingField(field);
+    setEditValue(profileData[field] || '');
   };
 
-  const handleSave = () => {
-    const updatePayload = { [editableField]: updatedValue };
-    dispatch(updateRestaurantProfile({ restaurantId: restaurantProfile.restaurantId, updatePayload }))
-      .unwrap()
-      .then(() => {
-        setEditableField(null);
-        setUpdatedValue('');
-      })
-      .catch((error) => console.error('Failed to update profile:', error));
+  const handleUpdate = async (field) => {
+    setIsUpdating(true);
+    try {
+      await dispatch(updateRestaurantProfile({ id, profileData: { field, value: editValue, restaurantId } }));
+      setProfileData((prev) => ({ ...prev, [field]: editValue }));
+      setEditingField(null);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <CContainer className="py-5">
-      <h2 className="mb-4">My Account</h2>
-      <CRow>
-        {/* Profile Section */}
-        <CCol md={6} className="mb-4">
-          <h5 className="mb-3">Profile</h5>
-          <CImage
-            rounded
-            src={restaurantProfile?.image || 'https://via.placeholder.com/100'}
-            width={100}
-            height={100}
-            className="mb-3"
+  const renderField = (field, label) => (
+    <div className="mb-4">
+      <CFormLabel htmlFor={field} className="fw-bold">
+        {label}
+      </CFormLabel>
+      {editingField === field ? (
+        <div className="d-flex align-items-center mt-1">
+          <CFormInput
+            id={field}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="me-2"
           />
-          {renderField('First Name', 'firstName', restaurantProfile?.firstName)}
-          {renderField('Last Name', 'lastName', restaurantProfile?.lastName)}
-          {renderField('Restaurant Name', 'restName', restaurantProfile?.restName)}
-          {renderField('Gender', 'gender', restaurantProfile?.gender)}
-        </CCol>
-
-        {/* Contact Details Section */}
-        <CCol md={6} className="mb-4">
-          <h5 className="mb-3">Contact Details</h5>
-          {renderField('Email', 'email', restaurantProfile?.email)}
-          {renderField('Phone Number', 'phoneNumber', restaurantProfile?.phoneNumber)}
-          {renderField('Address', 'address', restaurantProfile?.address)}
-          {renderField('Pin Code', 'pinCode', restaurantProfile?.pinCode)}
-        </CCol>
-      </CRow>
-    </CContainer>
+          <CButton
+            color="success"
+            size="sm"
+            onClick={() => handleUpdate(field)}
+            disabled={isUpdating}
+          >
+            {isUpdating ? <CSpinner size="sm" /> : 'Update'}
+          </CButton>
+        </div>
+      ) : (
+        <div className="d-flex align-items-center mt-1">
+          <span className="me-auto">{profileData[field] || '-'}</span>
+          <CButton
+            color="primary"
+            size="sm"
+            className="ms-2"
+            onClick={() => handleEdit(field)}
+          >
+            Edit
+          </CButton>
+        </div>
+      )}
+    </div>
   );
 
-  function renderField(label, field, value) {
-    return (
-      <div className="mb-3">
-        <span className="fw-bold">{label}</span>
-        <div className="d-flex align-items-center">
-          {editableField === field ? (
-            <>
-              <CFormInput
-                size="sm"
-                value={updatedValue}
-                onChange={(e) => setUpdatedValue(e.target.value)}
-                className="me-2"
-              />
-              <CButton color="success" size="sm" onClick={handleSave}>
-                Save
-              </CButton>
-            </>
-          ) : (
-            <>
-              <span className="ms-2 text-muted">{value || '-'}</span>
-              <CButton
-                color="link"
-                size="sm"
-                className="ms-2"
-                onClick={() => handleEdit(field, value)}
-              >
-                Edit
-              </CButton>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
-};
+  return (
+    <CCard className="w-75 mx-auto my-5 shadow-lg">
+      <CCardHeader className="text-center bg-primary text-white">
+        <CCardTitle>Profile Information</CCardTitle>
+      </CCardHeader>
+      <CCardBody>
+        {loading ? (
+          <div className="text-center">
+            <CSpinner color="primary" />
+          </div>
+        ) : (
+          <CRow>
+            {/* Left Section */}
+            <CCol md={6} className="bg-white shadow-sm p-4 rounded">
+              <div className="text-center mb-4">
+                <CImage
+                  rounded
+                  src={
+                    profileData?.image || 'https://via.placeholder.com/150'
+                  }
+                  alt="Profile"
+                  width={100}
+                  height={100}
+                />
+              </div>
+              {renderField('firstName', 'First Name')}
+              {renderField('lastName', 'Last Name')}
+              {renderField('gender', 'Gender')}
+              {renderField('restName', 'Restaurant Name')}
+              {renderField('phoneNumber', 'Phone Number')}
+            </CCol>
 
-export default Account;
+            {/* Right Section */}
+            <CCol md={6} className="bg-white shadow-sm p-4 rounded">
+              {renderField('address', 'Address')}
+              {renderField('pinCode', 'Pin Code')}
+              {renderField('restaurantId', 'Restaurant ID')}
+              {renderField('identity', 'Identity Type')}
+              {renderField('identityNumber', 'Identity Number')}
+              {renderField('email', 'Email')}
+            </CCol>
+          </CRow>
+        )}
+      </CCardBody>
+    </CCard>
+  );
+}
