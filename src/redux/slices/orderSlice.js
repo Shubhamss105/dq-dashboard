@@ -134,10 +134,15 @@ const orderSlice = createSlice({
     orders: [],
     orderDetails: null,
     notificationOrders: [],
+    newOrderCount: 0,
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    resetNewOrderCount: (state) => {
+      state.newOrderCount = 0;
+    },
+  },
   extraReducers: (builder) => {
     // Fetch orders
     builder
@@ -147,6 +152,10 @@ const orderSlice = createSlice({
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
+        // const newOrders = action.payload.filter(
+        //   (order) => !state.orders.find((o) => o.id === order.id)
+        // );
+        // state.newOrderCount += newOrders.length;
         state.orders = action.payload.data;
       })
       .addCase(fetchOrders.rejected, (state, action) => {
@@ -212,7 +221,7 @@ builder
       })
       .addCase(updateOrderNotificationStatus.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload.data;
         toast.error('Failed to update notification status.');
       });
 
@@ -234,5 +243,7 @@ builder
       });
   },
 });
+
+// export const { resetNewOrderCount } = orderSlice.actions;
 
 export default orderSlice.reducer;

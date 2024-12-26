@@ -11,6 +11,7 @@ import customerReducer from './slices/customerSlice';
 import transactionReducer from './slices/transactionSlice';
 import orderReducer from './slices/orderSlice';
 import restaurantProfileReducer from './slices/restaurantProfileSlice';
+import reportReducer from './slices/reportSlice';
 
 // Configure the Redux store
 const store = configureStore({
@@ -25,7 +26,8 @@ const store = configureStore({
     customers: customerReducer,
     transactions: transactionReducer,
     orders: orderReducer,
-    restaurantProfile: restaurantProfileReducer
+    restaurantProfile: restaurantProfileReducer,
+    reports: reportReducer
   },
 });
 
