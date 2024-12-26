@@ -20,9 +20,9 @@ export const fetchAllDaysReports = createAsyncThunk(
 // Fetch report by type (daily or payment report)
 export const fetchReportByType = createAsyncThunk(
   'reports/fetchReportByType',
-  async ({ id, reportType }, { rejectWithValue }) => {
+  async ({ restaurantId, reportType }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/getReportByType/${id}`, {
+      const response = await axios.get(`${BASE_URL}/getReportByType/${restaurantId}`, {
         params: { type: reportType },
       });
       return response.data;
@@ -37,7 +37,7 @@ const reportSlice = createSlice({
   name: 'reports',
   initialState: {
     allDaysReports: [],
-    reportByType: {},
+    reportByType: [],
     loading: false,
     error: null,
   },

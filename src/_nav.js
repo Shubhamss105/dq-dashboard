@@ -112,6 +112,11 @@ const _nav = [
         name: 'Daily Report',
         to: '/daily-report',
       },
+      {
+        component: CNavItem,
+        name: 'Payment Report',
+        to: '/payment-report',
+      },
     
     ],
   },
