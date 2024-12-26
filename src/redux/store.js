@@ -12,6 +12,7 @@ import transactionReducer from './slices/transactionSlice';
 import orderReducer from './slices/orderSlice';
 import restaurantProfileReducer from './slices/restaurantProfileSlice';
 import reportReducer from './slices/reportSlice';
+import dashboardReducer from './slices/dashboardSlice';
 
 // Configure the Redux store
 const store = configureStore({
@@ -27,7 +28,8 @@ const store = configureStore({
     transactions: transactionReducer,
     orders: orderReducer,
     restaurantProfile: restaurantProfileReducer,
-    reports: reportReducer
+    reports: reportReducer,
+    dashboard: dashboardReducer
   },
 });
 
