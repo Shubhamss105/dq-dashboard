@@ -35,7 +35,11 @@ const POSTableContent = () => {
   const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
 
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState(() => {
+    // Retrieve cart from localStorage if available
+    const savedCart = localStorage.getItem(`cart_${tableNumber}`);
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [tax, setTax] = useState(0)
   const [discount, setDiscount] = useState(0)
   const [showTaxModal, setShowTaxModal] = useState(false)
@@ -56,6 +60,9 @@ const POSTableContent = () => {
 
   const [searchProduct, setSearchProduct] = useState('')
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [itemToDelete, setItemToDelete] = useState(null);
+
   useEffect(() => {
     if (restaurantId) {
       dispatch(fetchMenuItems({ restaurantId }))
@@ -63,12 +70,38 @@ const POSTableContent = () => {
     }
   }, [dispatch, restaurantId])
 
+    // Save cart to localStorage whenever it changes
+    useEffect(() => {
+      localStorage.setItem(`cart_${tableNumber}`, JSON.stringify(cart));
+    }, [cart]);
+
   const [formValues, setFormValues] = useState({
     name: '',
     email: '',
     phoneNumber: '',
     address: '',
   })
+
+  // Function to handle delete button click
+const handleDeleteClick = (item) => {
+  setItemToDelete(item);
+  setShowDeleteModal(true);
+};
+
+// Function to confirm deletion
+const confirmDelete = () => {
+  if (itemToDelete) {
+    removeFromCart(itemToDelete.id);
+    setShowDeleteModal(false);
+    setItemToDelete(null);
+  }
+};
+
+// Function to cancel deletion
+const cancelDelete = () => {
+  setShowDeleteModal(false);
+  setItemToDelete(null);
+};
 
   const filteredCustomers = customers?.filter((customer) =>
     customer.name?.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -364,7 +397,7 @@ const POSTableContent = () => {
                       </h6>
                     </div>
                     <div>₹{item.price * item.quantity}</div>
-                    <CButton color="danger" size="sm" onClick={() => removeFromCart(item.id)}>
+                    <CButton color="danger" size="sm" onClick={() => handleDeleteClick(item)}>
                       <CIcon icon={cilTrash} />
                     </CButton>
                   </div>
@@ -527,6 +560,24 @@ const POSTableContent = () => {
           </CButton>
         </CModalFooter>
       </CModal>
+
+       {/* Delete Confirmation Modal */}
+  <CModal visible={showDeleteModal} onClose={cancelDelete}>
+    <CModalHeader>
+      <CModalTitle>Confirm Deletion</CModalTitle>
+    </CModalHeader>
+    <CModalBody>
+      Are you sure you want to delete this item from the cart?
+    </CModalBody>
+    <CModalFooter>
+      <CButton color="secondary" onClick={cancelDelete}>
+        Cancel
+      </CButton>
+      <CButton color="danger" onClick={confirmDelete}>
+        Delete
+      </CButton>
+    </CModalFooter>
+  </CModal>
 
       {AddCustomerModal()}
     </CContainer>
