@@ -15,7 +15,8 @@ import {
   cilSettings,
   cibDocusign,
   cilNewspaper,
-  cibIndeed
+  cibIndeed,
+  cibMessenger
 } from '@coreui/icons'
 import { CNavGroup, CNavItem} from '@coreui/react'
 
@@ -67,6 +68,12 @@ const _nav = [
     name: 'QR Code',
     to: '/qr-code',
     icon: <CIcon icon={cilQrCode} customClassName="nav-icon"/>,
+  },
+  {
+    component: CNavItem,
+    name: 'Feedbacks',
+    to: '/feedback',
+    icon: <CIcon icon={cibMessenger} customClassName="nav-icon"/>,
   },
 
 

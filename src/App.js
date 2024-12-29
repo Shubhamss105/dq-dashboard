@@ -22,6 +22,7 @@ import POSTableContent from './views/pos/POSTableContent'
 import Account from './views/account/Account'
 import DailyReport from './views/reports/DailyReport'
 import PaymentReport from './views/reports/PaymentReport'
+import Feedback from './views/feedbacks/Feedback'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -84,6 +85,7 @@ const App = () => {
               <Route path="account" element={<Account/>} />
               <Route path="daily-report" element={<DailyReport/>} />
               <Route path="payment-report" element={<PaymentReport/>} />
+              <Route path="feedback" element={<Feedback/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>

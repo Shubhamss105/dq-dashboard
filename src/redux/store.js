@@ -13,6 +13,7 @@ import orderReducer from './slices/orderSlice';
 import restaurantProfileReducer from './slices/restaurantProfileSlice';
 import reportReducer from './slices/reportSlice';
 import dashboardReducer from './slices/dashboardSlice';
+import feedbackReducer from './slices/feedbackSlice';
 
 // Configure the Redux store
 const store = configureStore({
@@ -29,7 +30,8 @@ const store = configureStore({
     orders: orderReducer,
     restaurantProfile: restaurantProfileReducer,
     reports: reportReducer,
-    dashboard: dashboardReducer
+    dashboard: dashboardReducer,
+    feedbacks: feedbackReducer
   },
 });
 
