@@ -45,6 +45,22 @@ export const fetchWeeklyChartData = createAsyncThunk(
   }
 );
 
+export const fetchPaymentTypeStats = createAsyncThunk(
+  'dashboard/fetchPaymentTypeStats',
+  async ({ startDate, endDate, restaurantId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/getReportPaymentType`, {
+        startDate,
+        endDate,
+        restaurantId,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 // Dashboard slice
 const dashboardSlice = createSlice({
   name: 'dashboard',
@@ -52,6 +68,7 @@ const dashboardSlice = createSlice({
     overallReport: null,
     chartData: null,
     weeklyChartData: null,
+    paymentTypeStats: null,
     loading: false,
     error: null,
   },
@@ -94,6 +111,19 @@ const dashboardSlice = createSlice({
         state.weeklyChartData = action.payload;
       })
       .addCase(fetchWeeklyChartData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+       // Handle payment type statistics
+       .addCase(fetchPaymentTypeStats.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPaymentTypeStats.fulfilled, (state, action) => {
+        state.loading = false;
+        state.paymentTypeStats = action.payload;
+      })
+      .addCase(fetchPaymentTypeStats.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

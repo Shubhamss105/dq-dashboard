@@ -15,6 +15,8 @@ import {
   CSpinner,
 } from '@coreui/react'
 import {DataGrid} from '@mui/x-data-grid'
+import CIcon from '@coreui/icons-react'
+import { cilPencil, cilTrash } from '@coreui/icons'
 import CustomToolbar from '../../utils/CustomToolbar'
 import { fetchCategories } from '../../redux/slices/categorySlice'
 import { fetchInventories } from '../../redux/slices/stockSlice'
@@ -22,7 +24,7 @@ import { addMenuItem,deleteMenuItem,fetchMenuItems } from '../../redux/slices/me
 
 const Menu = () => {
   const dispatch = useDispatch()
-  const { menuItems, loading } = useSelector((state) => state.menuItems)
+  const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems)
   const { categories, loading: categoryLoading } = useSelector((state) => state.category)
   const { inventories, loading: inventoryLoading } = useSelector((state) => state.inventories)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
@@ -42,6 +44,7 @@ const Menu = () => {
   useEffect(() => {
     dispatch(fetchCategories({restaurantId,token}))
     dispatch(fetchInventories({restaurantId}))
+    dispatch(fetchMenuItems({restaurantId}))
   }, [dispatch])
 
   const handleInputChange = (e) => {
@@ -211,18 +214,15 @@ const Menu = () => {
         <CButton color="secondary" onClick={() => setDeleteModalVisible(false)}>
           Cancel
         </CButton>
-        <CButton color="danger" onClick={handledeleteMenuItem} disabled={loading}>
-          {loading ? 'Deleting...' : 'Delete'}
+        <CButton color="danger" onClick={handledeleteMenuItem} disabled={menuItemsLoading}>
+          {menuItemsLoading ? 'Deleting...' : 'Delete'}
         </CButton>
       </CModalFooter>
     </CModal>
   )
 
   const columns = [
-    { field: 'id', headerName: 'ID', flex: 1 },
-    { field: 'itemName', headerName: 'Item Name', flex: 1 },
-    { field: 'categoryId', headerName: 'Category ID', flex: 1 },
-    { field: 'price', headerName: 'Price', flex: 1 },
+   
     {
       field: 'itemImage',
       headerName: 'Image',
@@ -231,6 +231,11 @@ const Menu = () => {
         <img src={params.value} alt={params.row.itemName} style={{ maxWidth: '100px' }} />
       ),
     },
+    { 
+      field: 'itemName', headerName: 'Item Name', flex: 1,
+      
+    },
+    { field: 'price', headerName: 'Price', flex: 1 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -287,11 +292,11 @@ const Menu = () => {
            </div>
       <div style={{height: 'auto', width: '100%', backgroundColor: 'white' }}>
         <DataGrid
-          rows={menuItems}
+          rows={menuItems?.menus || []}
           columns={columns}
           pageSize={5}
           rowsPerPageOptions={[5, 10, 20]}
-          loading={loading}
+          menuItemsLoading={menuItemsLoading}
           autoHeight
           slots={{ Toolbar: CustomToolbar }}
         />

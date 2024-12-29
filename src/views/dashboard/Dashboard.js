@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { CChartLine, CChartPie } from '@coreui/react-chartjs';
-import { CFormSelect, CSpinner, CRow, CCol, CCard, CCardBody, CCardHeader } from '@coreui/react';
-import { fetchChartData, fetchWeeklyChartData, fetchOverallReport } from '../../redux/slices/dashboardSlice';
+import { CChartLine, CChartPie, CChartBar } from '@coreui/react-chartjs';
+import { CFormSelect, CSpinner, CRow, CCol, CCard, CCardBody, CCardHeader, CFormInput, CButton } from '@coreui/react';
+import { fetchChartData, fetchWeeklyChartData, fetchOverallReport, fetchPaymentTypeStats } from '../../redux/slices/dashboardSlice';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -10,7 +10,9 @@ const Dashboard = () => {
     chartData,
     weeklyChartData,
     overallReport,
+    paymentTypeStats,
     loading,
+    error
   } = useSelector((state) => state.dashboard);
   const restaurantId = useSelector((state) => state.auth.restaurantId);
 
@@ -22,6 +24,8 @@ const Dashboard = () => {
     completedOrders: 'today',
     rejectedOrders: 'today',
   });
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     if (restaurantId) {
@@ -30,6 +34,26 @@ const Dashboard = () => {
       dispatch(fetchWeeklyChartData({ year: selectedWeekYear, restaurantId }));
     }
   }, [dispatch, selectedYear, selectedWeekYear, restaurantId]);
+
+  const handleFetchReport = () => {
+    if (startDate && endDate) {
+      dispatch(
+        fetchPaymentTypeStats({
+          startDate,
+          endDate,
+          restaurantId: restaurantId,
+        })
+      );
+    } else {
+      alert('Please select both start and end dates');
+    }
+  };
+
+  const paymentReportData = paymentTypeStats?.data?.map((item) => ({
+    label: item.payment_type,
+    count: item.total_count,
+    amount: parseFloat(item.total_amount),
+  })) || [];
 
   const handleDropdownChange = (key, value) => {
     setDropdownStates((prevState) => ({
@@ -90,7 +114,7 @@ const Dashboard = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2 className="mb-4">Dashboard</h2>
+      <h2 className="mb-4">Overview</h2>
       {loading ? (
         <div className="d-flex justify-content-center">
           <CSpinner color="primary" variant="grow" />
@@ -185,6 +209,105 @@ const Dashboard = () => {
                     }}
                     style={{ height: '400px' }}
                   />
+                </CCardBody>
+              </CCard>
+            </CCol>
+          </CRow>
+
+          {/* Payment Report Section */}
+          <CRow className="justify-content-center my-4" style={{ width: '100%' }}>
+            <CCol md={12}>
+              <CCard>
+                <h3 className="d-flex p-4 fw-semibold justify-content-between align-items-center">
+                Get Report by Payment Type
+                </h3>
+                <h6 className='text-danger px-4 fw-medium cil-italic'>Select start date and end to get Report</h6>
+                <CCardBody>
+                  <CRow className="align-items-center mb-4">
+                    <CCol md={5}>
+                      <label htmlFor="start-date" className="form-label">Start Date</label>
+                      <CFormInput
+                        type="date"
+                        id="start-date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        placeholder="Start Date"
+                      />
+                    </CCol>
+                    <CCol md={5}>
+                      <label htmlFor="end-date" className="form-label">End Date</label>
+                      <CFormInput
+                        type="date"
+                        id="end-date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        placeholder="End Date"
+                      />
+                    </CCol>
+                    <CCol md={2} className="text-end mt-4">
+                      <CButton color="primary" onClick={handleFetchReport} style={{ width: '100%' }}>
+                        Fetch Report
+                      </CButton>
+                    </CCol>
+                  </CRow>
+                  <CRow>
+                    <CCol>
+                      {loading && <p>Loading...</p>}
+                      {error && <p className="text-danger">Error: {error}</p>}
+                      {(!loading && paymentTypeStats?.status === 'success' && paymentReportData.length > 0) ? (
+                        <CChartBar
+                          data={{
+                            labels: paymentReportData?.map((item) => item.label),
+                            datasets: [
+                              {
+                                label: 'Total Count',
+                                backgroundColor: '#3399ff',
+                                data: paymentReportData?.map((item) => item.count),
+                              },
+                              {
+                                label: 'Total Amount',
+                                backgroundColor: '#66cc66',
+                                data: paymentReportData?.map((item) => item.amount),
+                              },
+                            ],
+                          }}
+                          options={{
+                            plugins: {
+                              legend: {
+                                position: 'top',
+                              },
+                            },
+                            responsive: true,
+                            maintainAspectRatio: false,
+                          }}
+                          style={{ height: '400px' }}
+                        />
+                      ) : (
+                        <CChartBar
+                          data={{
+                            labels: ['Default'],
+                            datasets: [
+                              {
+                                label: 'No Data',
+                                backgroundColor: '#d3d3d3',
+                                data: [0],
+                              },
+                            ],
+                          }}
+                          options={{
+                            plugins: {
+                              legend: {
+                                display: false,
+                              },
+                            },
+                            responsive: true,
+                            maintainAspectRatio: false,
+                          }}
+                          style={{ height: '400px' }}
+                        />
+                      )}
+                    </CCol>
+                  </CRow>
                 </CCardBody>
               </CCard>
             </CCol>
