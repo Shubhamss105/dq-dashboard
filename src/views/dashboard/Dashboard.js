@@ -113,7 +113,7 @@ const Dashboard = () => {
   );
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
       <h2 className="mb-4">Overview</h2>
       {loading ? (
         <div className="d-flex justify-content-center">

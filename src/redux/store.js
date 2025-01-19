@@ -14,6 +14,7 @@ import restaurantProfileReducer from './slices/restaurantProfileSlice';
 import reportReducer from './slices/reportSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import feedbackReducer from './slices/feedbackSlice';
+import sidebarReducer from './slices/sidebarSlice';
 
 // Configure the Redux store
 const store = configureStore({
@@ -31,7 +32,8 @@ const store = configureStore({
     restaurantProfile: restaurantProfileReducer,
     reports: reportReducer,
     dashboard: dashboardReducer,
-    feedbacks: feedbackReducer
+    feedbacks: feedbackReducer,
+    sidebar: sidebarReducer,
   },
 });
 

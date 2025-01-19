@@ -1,4 +1,3 @@
-// Order.js
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { DataGrid } from '@mui/x-data-grid'
@@ -6,6 +5,7 @@ import { fetchOrders, updateOrderStatus } from '../../redux/slices/orderSlice'
 import { CButton, CSpinner } from '@coreui/react'
 import CustomToolbar from '../../utils/CustomToolbar'
 import { toast } from 'react-toastify'
+import { format } from 'date-fns'
 
 const Order = () => {
   const dispatch = useDispatch()
@@ -22,23 +22,14 @@ const Order = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await dispatch(updateOrderStatus({ id: orderId, status: newStatus }));
-      closeSidebar();
+      await dispatch(updateOrderStatus({ id: orderId, status: newStatus }))
+      closeSidebar()
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error('Error updating status:', error)
     }
-  };
-  
-  
-  
+  }
 
   const closeSidebar = () => setSelectedOrder(null)
-
-  // Generate serial numbers
-  const generateSerialNumber = (() => {
-    let serialCounter = 1
-    return () => serialCounter++
-  })()
 
   // Style based on status
   const getStatusStyle = (status) => ({
@@ -86,7 +77,14 @@ const Order = () => {
         </div>
       ),
     },
-    { field: 'created_at', headerName: 'Date', flex: 1, headerClassName: 'header-style' },
+    {
+      field: 'created_at',
+      headerName: 'Date',
+      flex: 1,
+      headerClassName: 'header-style',
+      valueGetter: (params) =>
+        format(new Date(params.row.created_at), 'dd/MM/yyyy HH:mm'), // Format the date
+    },
     {
       field: 'total',
       headerName: 'Total',
@@ -110,7 +108,7 @@ const Order = () => {
   ]
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
       <h2 className="mb-4">Orders</h2>
       {loading ? (
         <div className="d-flex justify-content-center">
@@ -119,10 +117,13 @@ const Order = () => {
       ) : (
         <DataGrid
           style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
-          rows={orders?.map((order) => ({
-            ...order,
-            sno: generateSerialNumber(),
-          }))}
+          rows={orders
+            ?.slice()
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // Sort orders by date (latest first)
+            .map((order, index) => ({
+              ...order,
+              sno: index + 1, // Assign serial number dynamically after sorting
+            }))}
           getRowId={(row) => row.order_id}
           columns={columns}
           pageSize={10}

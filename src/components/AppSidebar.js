@@ -16,15 +16,15 @@ import { AppSidebarNav } from './AppSidebarNav'
 
 import { logo } from 'src/assets/brand/logo'
 import DQLogo from '../assets/brand/logo-dark.png'
-import { sygnet } from 'src/assets/brand/sygnet'
+import { toggleUnfoldable, setSidebarShow } from '../redux/slices/sidebarSlice'
 
-// sidebar nav config
+// Sidebar navigation configuration
 import navigation from '../_nav'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
-  const unfoldable = useSelector((state) => state.sidebarUnfoldable)
-  const sidebarShow = useSelector((state) => state.sidebarShow)
+  const unfoldable = useSelector((state) => state.sidebar.sidebarUnfoldable)
+  const sidebarShow = useSelector((state) => state.sidebar.sidebarShow)
 
   return (
     <CSidebar
@@ -33,13 +33,10 @@ const AppSidebar = () => {
       position="fixed"
       unfoldable={unfoldable}
       visible={sidebarShow}
-      onVisibleChange={(visible) => {
-        dispatch({ type: 'set', sidebarShow: visible })
-      }}
+      onVisibleChange={(visible) => dispatch(setSidebarShow(visible))} // Update state on visibility change
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/">
-          {/* <CIcon customClassName="sidebar-brand-full" icon={logo} height={32} /> */}
           <CContainer className="d-flex align-items-center justify-content-center">
             <img
               src={DQLogo}
@@ -49,19 +46,20 @@ const AppSidebar = () => {
             />
             <h3 className="text-white m-0">DQ</h3>
           </CContainer>
-
-          <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"
           dark
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          onClick={() => dispatch(setSidebarShow(false))} // Close sidebar on small screens
         />
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
+          onClick={() => {
+            dispatch(toggleUnfoldable()) // Toggle the unfoldable state
+            // dispatch(setSidebarShow(false)) 
+          }}
         />
       </CSidebarFooter>
     </CSidebar>

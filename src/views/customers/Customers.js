@@ -95,7 +95,7 @@ const Customer = () => {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '4px' }}>
           <CButton
             color="primary"
             size="sm"
@@ -115,7 +115,7 @@ const Customer = () => {
             size="sm"
             onClick={() => openDeleteModal(params.row.id)}
           >
-            <CIcon icon={cilTrash} /> Delete
+            <CIcon icon={cilTrash} /> 
           </CButton>
         </div>
       ),
@@ -123,7 +123,7 @@ const Customer = () => {
   ]
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
       <h2 className="mb-4">Customers</h2>
       {loading ? (
         <div className="d-flex justify-content-center">
@@ -139,7 +139,7 @@ const Customer = () => {
           columns={columns}
           pageSize={10}
           rowsPerPageOptions={[10]}
-          components={{ Toolbar: CustomToolbar }}
+          slots={{ Toolbar: CustomToolbar }}
           sx={{
             '& .header-style': {
               fontWeight: 'bold',

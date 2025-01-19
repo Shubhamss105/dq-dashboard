@@ -159,7 +159,7 @@ const Transactions = () => {
   ]
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
       <h2 className="mb-4">Transactions</h2>
       {loading ? (
         <div className="d-flex justify-content-center">
@@ -167,24 +167,28 @@ const Transactions = () => {
         </div>
       ) : (
         <DataGrid
-          style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
-          rows={transactions?.map((transaction) => ({
+        style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
+        rows={transactions
+          ?.slice() // Create a shallow copy of the array
+          ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // Sort by created_at in descending order
+          ?.map((transaction) => ({
             id: transaction.id,
             ...transaction,
           }))}
-          columns={columns}
-          pageSize={10}
-          rowsPerPageOptions={[10]}
-          slots={{
-            toolbar: CustomToolbar,
-          }}
-          sx={{
-            '& .header-style': {
-              fontWeight: 'bold',
-              fontSize: '1.1rem',
-            },
-          }}
-        />
+        columns={columns}
+        pageSize={10}
+        rowsPerPageOptions={[10]}
+        slots={{
+          toolbar: CustomToolbar,
+        }}
+        sx={{
+          '& .header-style': {
+            fontWeight: 'bold',
+            fontSize: '1.1rem',
+          },
+        }}
+      />
+      
       )}
 
       {/* Modal for Invoice Preview */}

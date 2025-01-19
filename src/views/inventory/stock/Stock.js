@@ -171,7 +171,7 @@ const Stock = () => {
   ]
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
       <div
         style={{
           display: 'flex',

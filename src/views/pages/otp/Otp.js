@@ -46,7 +46,7 @@ const Otp = () => {
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
-          <CCol md={8}>
+          <CCol xs={12} md={8} lg={6}>
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
@@ -67,7 +67,7 @@ const Otp = () => {
                       />
                     </CInputGroup>
                     <CRow>
-                      <CCol xs={6}>
+                      <CCol xs={12}>
                         <CButton type="submit" color="primary" className="px-4" disabled={loading}>
                           {loading ? <CSpinner as="span" size="sm" aria-hidden="true" /> : 'Verify OTP'}
                         </CButton>

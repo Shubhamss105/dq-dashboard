@@ -19,7 +19,7 @@ import {
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
-import logo from '../../../assets/brand/logo-dark.png'
+import logo from '../../../assets/brand/logo-dark.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -44,7 +44,7 @@ const Login = () => {
       <CContainer>
         <CRow className="justify-content-center">
           <CCol md={8}>
-            <CCardGroup>
+            <CCardGroup className="flex-column flex-md-row"> {/* Adjust for responsive layout */}
               <CCard className="p-4">
                 <CCardBody>
                   <CForm onSubmit={handleLogin}>
@@ -90,9 +90,10 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-white py-5" style={{ width: '44%' }}>
+              <CCard className="text-white bg-white py-5 d-none d-md-block" style={{ width: '44%' }}>
+                {/* Hide the image on small screens */}
                 <CCardBody className="text-center">
-                <CImage fluid src={logo} />
+                  <CImage fluid src={logo} />
                 </CCardBody>
               </CCard>
             </CCardGroup>

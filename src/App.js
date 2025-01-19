@@ -1,4 +1,3 @@
-// src/App.js
 import React, { Suspense, useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
@@ -8,27 +7,28 @@ import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import './scss/examples.scss'
 import PrivateRoute from './components/PrivateRoute'
-import Page404 from './views/pages/page404/Page404'
-import Orders from './views/orders/Orders'
-import Supplier from './views/inventory/supplier/Supplier'
-import QRCode from './views/qrCode/QRCode'
-import Category from './views/category/Category'
-import Stock from './views/inventory/stock/Stock'
-import Menu from './views/menu/Menu'
-import Customers from './views/customers/Customers'
-import Transactions from './views/transactions/Transactions'
-import POS from './views/pos/POS'
-import POSTableContent from './views/pos/POSTableContent'
-import Account from './views/account/Account'
-import DailyReport from './views/reports/DailyReport'
-import PaymentReport from './views/reports/PaymentReport'
-import Feedback from './views/feedbacks/Feedback'
 
+// Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Otp = React.lazy(() => import('./views/pages/otp/Otp'))
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
+const Orders = React.lazy(() => import('./views/orders/Orders'))
+const Supplier = React.lazy(() => import('./views/inventory/supplier/Supplier'))
+const QRCode = React.lazy(() => import('./views/qrCode/QRCode'))
+const Category = React.lazy(() => import('./views/category/Category'))
+const Stock = React.lazy(() => import('./views/inventory/stock/Stock'))
+const Menu = React.lazy(() => import('./views/menu/Menu'))
+const Customers = React.lazy(() => import('./views/customers/Customers'))
+const Transactions = React.lazy(() => import('./views/transactions/Transactions'))
+const POS = React.lazy(() => import('./views/pos/POS'))
+const POSTableContent = React.lazy(() => import('./views/pos/POSTableContent'))
+const Account = React.lazy(() => import('./views/account/Account'))
+const DailyReport = React.lazy(() => import('./views/reports/DailyReport'))
+const PaymentReport = React.lazy(() => import('./views/reports/PaymentReport'))
+const Feedback = React.lazy(() => import('./views/feedbacks/Feedback'))
+const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -72,20 +72,20 @@ const App = () => {
             >
               {/* Nested Authenticated Routes */}
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="orders" element={<Orders/>} />
-              <Route path="supplier" element={<Supplier/>} />
-              <Route path="qr-code" element={<QRCode/>} />
-              <Route path="category" element={<Category/>} />
-              <Route path="stock" element={<Stock/>} />
-              <Route path="menu" element={<Menu/>} />
-              <Route path="customers" element={<Customers/>} />
-              <Route path="transactions" element={<Transactions/>} />
-              <Route path="pos" element={<POS/>} />
-              <Route path="pos/tableNumber/:tableNumber" element={<POSTableContent/>} />
-              <Route path="account" element={<Account/>} />
-              <Route path="daily-report" element={<DailyReport/>} />
-              <Route path="payment-report" element={<PaymentReport/>} />
-              <Route path="feedback" element={<Feedback/>} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="supplier" element={<Supplier />} />
+              <Route path="qr-code" element={<QRCode />} />
+              <Route path="category" element={<Category />} />
+              <Route path="stock" element={<Stock />} />
+              <Route path="menu" element={<Menu />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="transactions" element={<Transactions />} />
+              <Route path="pos" element={<POS />} />
+              <Route path="pos/tableNumber/:tableNumber" element={<POSTableContent />} />
+              <Route path="account" element={<Account />} />
+              <Route path="daily-report" element={<DailyReport />} />
+              <Route path="payment-report" element={<PaymentReport />} />
+              <Route path="feedback" element={<Feedback />} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>
