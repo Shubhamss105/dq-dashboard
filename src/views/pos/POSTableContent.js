@@ -27,6 +27,8 @@ import { fetchMenuItems } from '../../redux/slices/menuSlice'
 import { fetchCustomers, addCustomer } from '../../redux/slices/customerSlice'
 import { createTransaction } from '../../redux/slices/transactionSlice'
 import { useDispatch, useSelector } from 'react-redux'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 const POSTableContent = () => {
   const dispatch = useDispatch()
@@ -35,7 +37,7 @@ const POSTableContent = () => {
   const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
 
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0)
 
   const [tax, setTax] = useState(0)
   const [discount, setDiscount] = useState(0)
@@ -57,30 +59,30 @@ const POSTableContent = () => {
 
   const [searchProduct, setSearchProduct] = useState('')
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-const [itemToDelete, setItemToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState(null)
 
-const [cart, setCart] = useState(() => {
-  // Retrieve cart from localStorage if available
-  const savedCart = localStorage.getItem(`cart_${tableNumber}`);
-  return savedCart ? JSON.parse(savedCart) : [];
-});
+  const [cart, setCart] = useState(() => {
+    // Retrieve cart from localStorage if available
+    const savedCart = localStorage.getItem(`cart_${tableNumber}`)
+    return savedCart ? JSON.parse(savedCart) : []
+  })
 
-const [startTime, setStartTime] = useState(() => {
-  const savedStartTime = localStorage.getItem(`start_time_${tableNumber}`);
-  return savedStartTime ? new Date(savedStartTime) : null;
-});
+  const [startTime, setStartTime] = useState(() => {
+    const savedStartTime = localStorage.getItem(`start_time_${tableNumber}`)
+    return savedStartTime ? new Date(savedStartTime) : null
+  })
 
-useEffect(() => {
-  if (startTime) {
-    const interval = setInterval(() => {
-      const now = new Date();
-      setElapsedTime(Math.floor((now - startTime) / 1000));
-    }, 1000);
+  useEffect(() => {
+    if (startTime) {
+      const interval = setInterval(() => {
+        const now = new Date()
+        setElapsedTime(Math.floor((now - startTime) / 1000))
+      }, 1000)
 
-    return () => clearInterval(interval);
-  }
-}, [startTime]);
+      return () => clearInterval(interval)
+    }
+  }, [startTime])
 
   useEffect(() => {
     if (restaurantId) {
@@ -89,11 +91,10 @@ useEffect(() => {
     }
   }, [dispatch, restaurantId])
 
-    // Save cart to localStorage whenever it changes
-    useEffect(() => {
-      localStorage.setItem(`cart_${tableNumber}`, JSON.stringify(cart));
-    }, [cart]);
-
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(`cart_${tableNumber}`, JSON.stringify(cart))
+  }, [cart])
 
   const [formValues, setFormValues] = useState({
     name: '',
@@ -102,26 +103,29 @@ useEffect(() => {
     address: '',
   })
 
+    // Generate random customer ID
+const randomCustomerId = () => `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
+
   // Function to handle delete button click
-const handleDeleteClick = (item) => {
-  setItemToDelete(item);
-  setShowDeleteModal(true);
-};
-
-// Function to confirm deletion
-const confirmDelete = () => {
-  if (itemToDelete) {
-    removeFromCart(itemToDelete.id);
-    setShowDeleteModal(false);
-    setItemToDelete(null);
+  const handleDeleteClick = (item) => {
+    setItemToDelete(item)
+    setShowDeleteModal(true)
   }
-};
 
-// Function to cancel deletion
-const cancelDelete = () => {
-  setShowDeleteModal(false);
-  setItemToDelete(null);
-};
+  // Function to confirm deletion
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      removeFromCart(itemToDelete.id)
+      setShowDeleteModal(false)
+      setItemToDelete(null)
+    }
+  }
+
+  // Function to cancel deletion
+  const cancelDelete = () => {
+    setShowDeleteModal(false)
+    setItemToDelete(null)
+  }
 
   const filteredCustomers = customers?.filter((customer) =>
     customer.name?.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -152,33 +156,32 @@ const cancelDelete = () => {
       setCart([...cart, { ...product, quantity: 1 }])
     }
     if (!startTime) {
-      const now = new Date();
-      setStartTime(now);
-      localStorage.setItem(`start_time_${tableNumber}`, now.toISOString());
+      const now = new Date()
+      setStartTime(now)
+      localStorage.setItem(`start_time_${tableNumber}`, now.toISOString())
     }
   }
 
   const removeFromCart = (productId) => {
-    const updatedCart = cart.filter((item) => item.id !== productId);
-    setCart(updatedCart);
-  
+    const updatedCart = cart.filter((item) => item.id !== productId)
+    setCart(updatedCart)
+
     if (updatedCart.length === 0) {
       // Clear the timer if the cart becomes empty
-      setStartTime(null);
-      setElapsedTime(0);
-      localStorage.removeItem(`start_time_${tableNumber}`);
+      setStartTime(null)
+      setElapsedTime(0)
+      localStorage.removeItem(`start_time_${tableNumber}`)
     }
-  };
-  
+  }
 
   // Clear Cart
   const clearCart = () => {
-    setCart([]);
-    setStartTime(null);
-    setElapsedTime(0);
-    localStorage.removeItem(`cart_${tableNumber}`);
-    localStorage.removeItem(`start_time_${tableNumber}`);
-  };  
+    setCart([])
+    setStartTime(null)
+    setElapsedTime(0)
+    localStorage.removeItem(`cart_${tableNumber}`)
+    localStorage.removeItem(`start_time_${tableNumber}`)
+  }
 
   const handleInputChange = (e) => {
     setFormValues({ ...formValues, [e.target.name]: e.target.value })
@@ -251,7 +254,7 @@ const cancelDelete = () => {
       total: calculateTotal(),
       type: paymentType,
       restaurantId: restaurantId,
-      tableNumber: tableNumber
+      tableNumber: tableNumber,
     }
 
     if (paymentType === 'split') {
@@ -270,13 +273,45 @@ const cancelDelete = () => {
   }
 
   const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
     return `${hours.toString().padStart(2, '0')}:${minutes
       .toString()
-      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const generateInvoice = () => {
+    const invoiceElement = document.getElementById('invoice-section') // Reference to the invoice section
+
+    // Ensure the invoice section is visible temporarily if hidden
+    invoiceElement.style.display = 'block'
+
+    // Capture the invoice as an image
+    html2canvas(invoiceElement, { scale: 2 })
+      .then((canvas) => {
+        const imgData = canvas.toDataURL('image/png')
+        const pdf = new jsPDF('p', 'mm', 'a4')
+
+        // Calculate dimensions for the PDF
+        const pdfWidth = pdf.internal.pageSize.getWidth()
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+
+        // Add the captured image to the PDF
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+
+        // Display the PDF in a new tab
+        const pdfBlob = pdf.output('bloburl')
+        window.open(pdfBlob, '_blank') // Open PDF in a new tab
+
+        // Optional: Save the PDF automatically
+        pdf.save(`Invoice_${new Date().toISOString()}.pdf`)
+      })
+      .finally(() => {
+        // Hide the invoice section again if needed
+        invoiceElement.style.display = 'none'
+      })
+  }
 
   const AddCustomerModal = () => {
     return (
@@ -428,7 +463,7 @@ const cancelDelete = () => {
             </CButton>
           </div>
           <CCard className="shadow-sm">
-          <CCardHeader className="bg-secondary text-white fw-bold">
+            <CCardHeader className="bg-secondary text-white fw-bold">
               {startTime ? (
                 <span className="text-warning">Time: {formatTime(elapsedTime)}</span>
               ) : (
@@ -498,6 +533,16 @@ const cancelDelete = () => {
           <CCardFooter className="bg-warning text-white rounded-2 d-flex justify-content-between p-3 mt-3 shadow-sm">
             <h4 className="mb-0">Total: ₹{calculateTotal()}</h4>
             <div>
+            <CButton color="danger" onClick={clearCart} className="text-white fw-bold me-2">
+                Cancel
+              </CButton>
+              <CButton
+                color="secondary"
+                onClick={generateInvoice}
+                className="text-white fw-bold me-2"
+              >
+                Generate Bill
+              </CButton>
               <CButton
                 color="success"
                 className="text-white fw-bold me-2"
@@ -505,13 +550,44 @@ const cancelDelete = () => {
               >
                 Pay Now
               </CButton>
-              <CButton color="danger" onClick={clearCart} className="text-white fw-bold me-2">
-                Cancel
-              </CButton>
             </div>
           </CCardFooter>
         </CCol>
       </CRow>
+
+      <div
+        id="invoice-section"
+        style={{ display: 'none', padding: '20px', border: '1px solid #ddd' }}
+      >
+        <h2 className="text-center">Invoice</h2>
+        <p>Table Number: {tableNumber}</p>
+        {selectedCustomerName ? (
+        <>
+          <p>Customer: {selectedCustomerName}</p>
+          <p>Phone: {customerPhoneNumber || 'N/A'}</p>
+        </>
+      ) : (
+        <p>Customer ID: {randomCustomerId()}</p>
+      )}
+        <hr />
+        <h4>Order Details:</h4>
+        <ul>
+          {cart.map((item) => (
+            <li key={item.id}>
+              {item.itemName} x {item.quantity} - ₹{item.price * item.quantity}
+            </li>
+          ))}
+        </ul>
+        <hr />
+        <p>Subtotal: ₹{calculateSubtotal()}</p>
+        <p>
+          Tax ({tax}%): ₹{calculateTaxAmount().toFixed(2)}
+        </p>
+        <p>
+          Discount ({discount}%): ₹{calculateDiscountAmount().toFixed(2)}
+        </p>
+        <h3>Total: ₹{calculateTotal()}</h3>
+      </div>
 
       {/* Tax Modal */}
       <CModal visible={showTaxModal} onClose={() => setShowTaxModal(false)}>
@@ -614,23 +690,21 @@ const cancelDelete = () => {
         </CModalFooter>
       </CModal>
 
-       {/* Delete Confirmation Modal */}
-  <CModal visible={showDeleteModal} onClose={cancelDelete}>
-    <CModalHeader>
-      <CModalTitle>Confirm Deletion</CModalTitle>
-    </CModalHeader>
-    <CModalBody>
-      Are you sure you want to delete this item from the cart?
-    </CModalBody>
-    <CModalFooter>
-      <CButton color="secondary" onClick={cancelDelete}>
-        Cancel
-      </CButton>
-      <CButton color="danger" onClick={confirmDelete}>
-        Delete
-      </CButton>
-    </CModalFooter>
-  </CModal>
+      {/* Delete Confirmation Modal */}
+      <CModal visible={showDeleteModal} onClose={cancelDelete}>
+        <CModalHeader>
+          <CModalTitle>Confirm Deletion</CModalTitle>
+        </CModalHeader>
+        <CModalBody>Are you sure you want to delete this item from the cart?</CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={cancelDelete}>
+            Cancel
+          </CButton>
+          <CButton color="danger" onClick={confirmDelete}>
+            Delete
+          </CButton>
+        </CModalFooter>
+      </CModal>
 
       {AddCustomerModal()}
     </CContainer>
