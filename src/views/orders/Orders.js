@@ -4,7 +4,6 @@ import { DataGrid } from '@mui/x-data-grid'
 import { fetchOrders, updateOrderStatus } from '../../redux/slices/orderSlice'
 import { CButton, CSpinner } from '@coreui/react'
 import CustomToolbar from '../../utils/CustomToolbar'
-import { toast } from 'react-toastify'
 import { format } from 'date-fns'
 
 const Order = () => {
@@ -133,6 +132,20 @@ const Order = () => {
             '& .header-style': {
               fontWeight: 'bold',
               fontSize: '1.1rem',
+            },
+            '@media (max-width: 600px)': {
+              '& .MuiDataGrid-columnHeaderTitle': {
+                fontSize: '0.9rem',
+              },
+              '& .MuiDataGrid-cell': {
+                fontSize: '0.8rem',
+              },
+              '& .MuiDataGrid-columnHeader': {
+                padding: '10px',
+              },
+              '& .MuiDataGrid-virtualScroller': {
+                paddingBottom: '0 !important',
+              },
             },
           }}
         />

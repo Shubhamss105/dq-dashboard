@@ -1,0 +1,23 @@
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity for backdrop */
+    z-index: 1030; /* Ensure it's below the sidebar */
+  }
+  
+  .sidebar-backdrop.show {
+    display: block;
+  }
+  
+  .sidebar-backdrop.fade {
+    transition: opacity 0.3s ease;
+  }
+  
+  .sidebar-backdrop:not(.show) {
+    display: none;
+    opacity: 0;
+  }
+  

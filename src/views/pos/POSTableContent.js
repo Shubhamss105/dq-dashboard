@@ -35,11 +35,8 @@ const POSTableContent = () => {
   const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
 
-  const [cart, setCart] = useState(() => {
-    // Retrieve cart from localStorage if available
-    const savedCart = localStorage.getItem(`cart_${tableNumber}`);
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const [elapsedTime, setElapsedTime] = useState(0);
+
   const [tax, setTax] = useState(0)
   const [discount, setDiscount] = useState(0)
   const [showTaxModal, setShowTaxModal] = useState(false)
@@ -63,6 +60,28 @@ const POSTableContent = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 const [itemToDelete, setItemToDelete] = useState(null);
 
+const [cart, setCart] = useState(() => {
+  // Retrieve cart from localStorage if available
+  const savedCart = localStorage.getItem(`cart_${tableNumber}`);
+  return savedCart ? JSON.parse(savedCart) : [];
+});
+
+const [startTime, setStartTime] = useState(() => {
+  const savedStartTime = localStorage.getItem(`start_time_${tableNumber}`);
+  return savedStartTime ? new Date(savedStartTime) : null;
+});
+
+useEffect(() => {
+  if (startTime) {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setElapsedTime(Math.floor((now - startTime) / 1000));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }
+}, [startTime]);
+
   useEffect(() => {
     if (restaurantId) {
       dispatch(fetchMenuItems({ restaurantId }))
@@ -74,6 +93,7 @@ const [itemToDelete, setItemToDelete] = useState(null);
     useEffect(() => {
       localStorage.setItem(`cart_${tableNumber}`, JSON.stringify(cart));
     }, [cart]);
+
 
   const [formValues, setFormValues] = useState({
     name: '',
@@ -131,16 +151,34 @@ const cancelDelete = () => {
     } else {
       setCart([...cart, { ...product, quantity: 1 }])
     }
+    if (!startTime) {
+      const now = new Date();
+      setStartTime(now);
+      localStorage.setItem(`start_time_${tableNumber}`, now.toISOString());
+    }
   }
 
   const removeFromCart = (productId) => {
-    setCart(cart.filter((item) => item.id !== productId))
-  }
+    const updatedCart = cart.filter((item) => item.id !== productId);
+    setCart(updatedCart);
+  
+    if (updatedCart.length === 0) {
+      // Clear the timer if the cart becomes empty
+      setStartTime(null);
+      setElapsedTime(0);
+      localStorage.removeItem(`start_time_${tableNumber}`);
+    }
+  };
+  
 
   // Clear Cart
   const clearCart = () => {
-    setCart([])
-  }
+    setCart([]);
+    setStartTime(null);
+    setElapsedTime(0);
+    localStorage.removeItem(`cart_${tableNumber}`);
+    localStorage.removeItem(`start_time_${tableNumber}`);
+  };  
 
   const handleInputChange = (e) => {
     setFormValues({ ...formValues, [e.target.name]: e.target.value })
@@ -230,6 +268,15 @@ const cancelDelete = () => {
         console.error('Error submitting payment:', error)
       })
   }
+
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const AddCustomerModal = () => {
     return (
@@ -381,7 +428,13 @@ const cancelDelete = () => {
             </CButton>
           </div>
           <CCard className="shadow-sm">
-            <CCardHeader className="bg-secondary text-white fw-bold">Cart</CCardHeader>
+          <CCardHeader className="bg-secondary text-white fw-bold">
+              {startTime ? (
+                <span className="text-warning">Time: {formatTime(elapsedTime)}</span>
+              ) : (
+                'Cart'
+              )}
+            </CCardHeader>
             <CCardBody>
               {cart.length === 0 ? (
                 <div>Total Items: 0</div>

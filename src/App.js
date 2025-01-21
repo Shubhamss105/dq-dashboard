@@ -7,6 +7,7 @@ import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import './scss/examples.scss'
 import PrivateRoute from './components/PrivateRoute'
+import './global.css'
 
 // Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
