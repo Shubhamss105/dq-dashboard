@@ -46,6 +46,7 @@ const PaymentReport = () => {
           <CSpinner color="primary" variant="grow" />
         </div>
       ) : (
+        <div style={{ overflowX: 'auto' }}>
         <DataGrid
           style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
           rows={reportByType?.map((report, index) => ({ id: index + 1, ...report }))}
@@ -62,6 +63,7 @@ const PaymentReport = () => {
             },
           }}
         />
+        </div>
       )}
     </div>
   )

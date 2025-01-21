@@ -1,34 +1,36 @@
-import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { DataGrid } from '@mui/x-data-grid'
-import { fetchOrders, updateOrderStatus } from '../../redux/slices/orderSlice'
-import { CButton, CSpinner } from '@coreui/react'
-import CustomToolbar from '../../utils/CustomToolbar'
-import { format } from 'date-fns'
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { DataGrid } from '@mui/x-data-grid';
+import { fetchOrders, updateOrderStatus } from '../../redux/slices/orderSlice';
+import { CButton, CSpinner } from '@coreui/react';
+import CustomToolbar from '../../utils/CustomToolbar';
+import { format } from 'date-fns';
+import { useMediaQuery } from '@mui/material';
 
 const Order = () => {
-  const dispatch = useDispatch()
-  const { orders, loading } = useSelector((state) => state.orders)
-  const restaurantId = useSelector((state) => state.auth.restaurantId)
+  const dispatch = useDispatch();
+  const { orders, loading } = useSelector((state) => state.orders);
+  const restaurantId = useSelector((state) => state.auth.restaurantId);
 
-  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     if (restaurantId) {
-      dispatch(fetchOrders({ restaurantId }))
+      dispatch(fetchOrders({ restaurantId }));
     }
-  }, [dispatch, restaurantId])
+  }, [dispatch, restaurantId]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await dispatch(updateOrderStatus({ id: orderId, status: newStatus }))
-      closeSidebar()
+      await dispatch(updateOrderStatus({ id: orderId, status: newStatus }));
+      closeSidebar();
     } catch (error) {
-      console.error('Error updating status:', error)
+      console.error('Error updating status:', error);
     }
-  }
+  };
 
-  const closeSidebar = () => setSelectedOrder(null)
+  const closeSidebar = () => setSelectedOrder(null);
 
   // Style based on status
   const getStatusStyle = (status) => ({
@@ -42,15 +44,16 @@ const Order = () => {
         : status === 'reject'
         ? '#F44336'
         : '#FFC107',
-  })
+  });
 
   const columns = [
-    { field: 'sno', headerName: 'S.No.', flex: 0.5, headerClassName: 'header-style' },
-    { field: 'order_id', headerName: 'Order Number', flex: 1, headerClassName: 'header-style' },
+    { field: 'sno', headerName: 'S.No.', flex: isMobile ? undefined : 0.5, minWidth: isMobile ? 80 : undefined, headerClassName: 'header-style' },
+    { field: 'order_id', headerName: 'Order Number', flex: isMobile ? undefined : 1, minWidth: isMobile ? 120 : undefined, headerClassName: 'header-style' },
     {
       field: 'items',
       headerName: 'Items',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) =>
         params.row.order_details
@@ -60,15 +63,23 @@ const Order = () => {
     {
       field: 'userName',
       headerName: 'Customer Name',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) => params.row.user?.name || 'N/A',
     },
-    { field: 'table_number', headerName: 'Table Number', flex: 1, headerClassName: 'header-style' },
+    {
+      field: 'table_number',
+      headerName: 'Table Number',
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 120 : undefined,
+      headerClassName: 'header-style',
+    },
     {
       field: 'status',
       headerName: 'Status',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 120 : undefined,
       headerClassName: 'header-style',
       renderCell: (params) => (
         <div style={getStatusStyle(params.value)}>
@@ -79,32 +90,40 @@ const Order = () => {
     {
       field: 'created_at',
       headerName: 'Date',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) =>
-        format(new Date(params.row.created_at), 'dd/MM/yyyy HH:mm'), // Format the date
+        format(new Date(params.row.created_at), 'dd/MM/yyyy HH:mm'),
     },
     {
       field: 'total',
       headerName: 'Total',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 100 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) => `₹${params.row.total || 0}`,
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 100 : undefined,
       headerClassName: 'header-style',
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <CButton color="primary" size="sm" onClick={() => setSelectedOrder(params.row)}>
+        <CButton
+          color="primary"
+          size={isMobile ? 'sm' : 'md'} // Adjust button size for mobile
+          style={isMobile ? { padding: '5px 10px', fontSize: '0.8rem', marginRight:'1rem' } : {}}
+          onClick={() => setSelectedOrder(params.row)}
+        >
           View Details
         </CButton>
       ),
     },
-  ]
+  ];
 
   return (
     <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
@@ -114,41 +133,37 @@ const Order = () => {
           <CSpinner color="primary" variant="grow" />
         </div>
       ) : (
-        <DataGrid
-          style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
-          rows={orders
-            ?.slice()
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // Sort orders by date (latest first)
-            .map((order, index) => ({
-              ...order,
-              sno: index + 1, // Assign serial number dynamically after sorting
-            }))}
-          getRowId={(row) => row.order_id}
-          columns={columns}
-          pageSize={10}
-          rowsPerPageOptions={[10]}
-          slots={{ Toolbar: CustomToolbar }}
-          sx={{
-            '& .header-style': {
-              fontWeight: 'bold',
-              fontSize: '1.1rem',
-            },
-            '@media (max-width: 600px)': {
-              '& .MuiDataGrid-columnHeaderTitle': {
-                fontSize: '0.9rem',
+        <div style={{ overflowX: 'auto' }}>
+          <DataGrid
+            style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
+            rows={orders
+              ?.slice()
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .map((order, index) => ({
+                ...order,
+                sno: index + 1,
+              }))}
+            getRowId={(row) => row.order_id}
+            columns={columns}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            slots={{ Toolbar: CustomToolbar }}
+            sx={{
+              '& .header-style': {
+                fontWeight: 'bold',
+                fontSize: '1.1rem',
               },
-              '& .MuiDataGrid-cell': {
-                fontSize: '0.8rem',
+              '@media (max-width: 600px)': {
+                '& .MuiDataGrid-columnHeaderTitle': {
+                  fontSize: '0.9rem',
+                },
+                '& .MuiDataGrid-cell': {
+                  fontSize: '0.8rem',
+                },
               },
-              '& .MuiDataGrid-columnHeader': {
-                padding: '10px',
-              },
-              '& .MuiDataGrid-virtualScroller': {
-                paddingBottom: '0 !important',
-              },
-            },
-          }}
-        />
+            }}
+          />
+        </div>
       )}
 
       {selectedOrder && (
@@ -165,8 +180,10 @@ const Order = () => {
             borderLeft: '1px solid #ccc',
             overflowY: 'auto',
             padding: '20px',
+            ...(window.innerWidth <= 500 && { width: '70%' }),
           }}
         >
+          {/* Sidebar content */}
           <div
             style={{
               display: 'flex',
@@ -245,7 +262,7 @@ const Order = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Order
+export default Order;

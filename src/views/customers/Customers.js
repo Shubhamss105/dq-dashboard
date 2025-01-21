@@ -6,11 +6,15 @@ import { CButton, CSpinner, CModal, CModalHeader, CModalBody, CModalFooter } fro
 import CIcon from '@coreui/icons-react'
 import { cilEnvelopeOpen, cilChatBubble, cilTrash } from '@coreui/icons'
 import CustomToolbar from '../../utils/CustomToolbar'
+import { useMediaQuery } from '@mui/material';
 
 const Customer = () => {
   const dispatch = useDispatch()
   const { customers, loading } = useSelector((state) => state.customers)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
+
+    const isMobile = useMediaQuery('(max-width:600px)');
+  
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [selectedCustomerId, setSelectedCustomerId] = useState(null)
@@ -55,42 +59,42 @@ const Customer = () => {
     {
       field: 'sno',
       headerName: 'S.No.',
-      flex: 0.5,
+      flex: isMobile ? undefined : 0.5, minWidth: isMobile ? 80 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) => params.row.sno, // Use the `sno` from rows
     },
     {
       field: 'name',
       headerName: 'Name',
-      flex: 1,
+      flex: isMobile ? undefined : 1, minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) => params.row.name || 'N/A',
     },
     {
       field: 'email',
       headerName: 'Email',
-      flex: 1,
+      flex: isMobile ? undefined : 1, minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) => params.row.email || 'N/A',
     },
     {
       field: 'phoneNumber',
       headerName: 'Phone Number',
-      flex: 1,
+      flex: isMobile ? undefined : 1, minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) => params.row.phoneNumber || 'N/A',
     },
     {
       field: 'address',
       headerName: 'Address',
-      flex: 1,
+      flex: isMobile ? undefined : 1, minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) => params.row.address || 'N/A',
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      flex: 1.5,
+      flex: isMobile ? undefined : 1.5, minWidth: isMobile ? 225 : undefined,
       headerClassName: 'header-style',
       sortable: false,
       filterable: false,
@@ -144,6 +148,20 @@ const Customer = () => {
             '& .header-style': {
               fontWeight: 'bold',
               fontSize: '1.1rem',
+            },
+            '& .MuiDataGrid-root': {
+              overflowX: 'auto', // Enable horizontal scrolling
+            },
+            '@media (max-width: 600px)': {
+              '& .MuiDataGrid-columnHeaderTitle': {
+                fontSize: '0.9rem',
+              },
+              '& .MuiDataGrid-cell': {
+                fontSize: '0.8rem',
+              },
+              '& .MuiDataGrid-columnHeader': {
+                padding: '10px',
+              },
             },
           }}
         />

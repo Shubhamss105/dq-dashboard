@@ -9,11 +9,14 @@ import { cilFile } from '@coreui/icons';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import CustomToolbar from '../../utils/CustomToolbar';
+import { useMediaQuery } from '@mui/material';
 
 const DailyReport = () => {
   const dispatch = useDispatch();
   const { allDaysReports, reportByType, loading } = useSelector((state) => state.reports);
   const restaurantId = useSelector((state) => state.auth.restaurantId);
+    const isMobile = useMediaQuery('(max-width:600px)');
+  
 
 
   useEffect(() => {
@@ -26,19 +29,22 @@ const DailyReport = () => {
     {
       field: 'day',
       headerName: 'Day',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
     },
     {
       field: 'dailyTotal',
       headerName: 'Daily Total',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
     },
     {
       field: 'totalTransactions',
       headerName: 'Total Transactions',
-      flex: 1,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
     },
   
@@ -52,6 +58,7 @@ const DailyReport = () => {
           <CSpinner color="primary" variant="grow" />
         </div>
       ) : (
+        <div style={{ overflowX: 'auto' }}>
         <DataGrid
           style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
           rows={allDaysReports?.map((report, index) => ({ id: index + 1, ...report }))}
@@ -66,8 +73,17 @@ const DailyReport = () => {
               fontWeight: 'bold',
               fontSize: '1.1rem',
             },
+            '@media (max-width: 600px)': {
+              '& .MuiDataGrid-columnHeaderTitle': {
+                fontSize: '0.9rem',
+              },
+              '& .MuiDataGrid-cell': {
+                fontSize: '0.8rem',
+              },
+            },
           }}
         />
+      </div>
       )}
 
     </div>

@@ -1,8 +1,13 @@
-// src/redux/slices/authSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { BASE_URL } from '../../utils/constants';
 import { toast } from 'react-toastify';
+
+const configureHeaders = (token) => ({
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
 // Async thunk for login
 export const loginUser = createAsyncThunk(
@@ -10,7 +15,7 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${BASE_URL}/login`, credentials);
-      return response.data; // Returns the API response
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
@@ -19,13 +24,27 @@ export const loginUser = createAsyncThunk(
 
 // Async thunk for OTP verification
 export const verifyOtp = createAsyncThunk('auth/verifyOtp', async (otpData, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(`${BASE_URL}/verify-otp`, otpData);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'OTP verification failed.');
-    }
+  try {
+    const response = await axios.post(`${BASE_URL}/verify-otp`, otpData);
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || 'OTP verification failed.');
+  }
 });
+
+// Async thunk for logout
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token;
+      await axios.post(`${BASE_URL}/logout`, {}, configureHeaders(token));
+      return true; // Logout successful
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Logout failed.');
+    }
+  }
+);
 
 // Initial state
 const initialState = {
@@ -41,37 +60,36 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    logout: (state) => {
+    localLogout: (state) => {
       state.user = null;
       state.token = null;
       state.restaurantId = null;
+
+      // Clear localStorage
       localStorage.removeItem('authToken');
       localStorage.removeItem('restaurantId');
       localStorage.removeItem('userId');
-      toast.info('You have been logged out.', { autoClose: 3000 });
+
+      toast.info('Logged out locally.', { autoClose: 3000 });
     },
   },
   extraReducers: (builder) => {
-    // Handle login
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
-        // Show success toast
         toast.success('OTP sent to email', { autoClose: 3000 });
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        // Show error toast
         toast.error(`Login failed: ${action.payload}`, { autoClose: 3000 });
       });
 
-    // Handle OTP verification
     builder
       .addCase(verifyOtp.pending, (state) => {
         state.loading = true;
@@ -84,25 +102,48 @@ const authSlice = createSlice({
         state.restaurantId = action.payload.restaurant_id;
         state.user = action.payload.user_id;
 
-        // Save to localStorage
         localStorage.setItem('authToken', action.payload.token);
         localStorage.setItem('restaurantId', action.payload.restaurant_id);
         localStorage.setItem('userId', action.payload.user_id);
 
-        // Show success toast
         toast.success('OTP verified successfully!', { autoClose: 3000 });
       })
       .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        // Show error toast
         toast.error(`OTP verification failed: ${action.payload}`, { autoClose: 3000 });
+      });
+
+    builder
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+        state.user = null;
+        state.token = null;
+        state.restaurantId = null;
+
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('restaurantId');
+        localStorage.removeItem('userId');
+
+        toast.info('You have been logged out.', { autoClose: 3000 });
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        toast.error(`Logout failed: ${action.payload}`, { autoClose: 3000 });
       });
   },
 });
 
-export const { logout } = authSlice.actions;
+// Export localLogout action
+export const { localLogout } = authSlice.actions;
 
+// Selector for auth data
 export const selectAuth = (state) => ({
   restaurantId: state.auth.restaurantId,
   token: state.auth.token,
