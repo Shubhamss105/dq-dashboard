@@ -1,101 +1,80 @@
-import React, { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import {
-  CButton,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
-  CForm,
-  CFormInput,
-  CFormSelect,
-  CRow,
-  CCol,
-  CSpinner,
-  CFormSwitch,
-} from '@coreui/react'
-import { DataGrid } from '@mui/x-data-grid'
-import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash } from '@coreui/icons'
-import CustomToolbar from '../../utils/CustomToolbar'
-import { fetchCategories } from '../../redux/slices/categorySlice'
-import { fetchInventories } from '../../redux/slices/stockSlice'
-import { addMenuItem, deleteMenuItem, fetchMenuItems, updateMenuItemStatus } from '../../redux/slices/menuSlice'
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { CButton, CSpinner } from '@coreui/react';
+import CommonModal from '../../components/CommonModal';
+import MenuItemForm from '../../components/MenuItemForm';
+import MenuItemList from '../../components/MenuItemList';
+import { fetchCategories } from '../../redux/slices/categorySlice';
+import { fetchInventories } from '../../redux/slices/stockSlice';
+import { addMenuItem, deleteMenuItem, fetchMenuItems, updateMenuItemStatus } from '../../redux/slices/menuSlice';
 
 const Menu = () => {
-  const dispatch = useDispatch()
-  const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems)
-  const { categories, loading: categoryLoading } = useSelector((state) => state.category)
-  const { inventories, loading: inventoryLoading } = useSelector((state) => state.inventories)
-  const restaurantId = useSelector((state) => state.auth.restaurantId)
-  const token = useSelector((state) => state.auth.token)
+  const dispatch = useDispatch();
+  const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems);
+  const { categories, loading: categoryLoading } = useSelector((state) => state.category);
+  const { inventories, loading: inventoryLoading } = useSelector((state) => state.inventories);
+  const restaurantId = useSelector((state) => state.auth.restaurantId);
+  const token = useSelector((state) => state.auth.token);
 
-  const [modalVisible, setModalVisible] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState(null);
   const [formData, setFormData] = useState({
     itemName: '',
     categoryId: '',
     itemImage: null,
     price: '',
     stock: [{ inventoryId: '', quantity: '' }],
-  })
-  const [previewImage, setPreviewImage] = useState(null)
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  });
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [editModalVisible, setEditModalVisible] = useState(false)
-  const [selectedMenu, setSelectedMenu] = useState(null)
-
+  // Fetch data on component mount
   useEffect(() => {
-    dispatch(fetchCategories({ restaurantId, token }))
-    dispatch(fetchInventories({ restaurantId }))
-    dispatch(fetchMenuItems({ restaurantId }))
-  }, [dispatch])
+    dispatch(fetchCategories({ restaurantId, token }));
+    dispatch(fetchInventories({ restaurantId }));
+    dispatch(fetchMenuItems({ restaurantId }));
+  }, [dispatch, restaurantId, token]);
 
+  // Handle input changes
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
-  // Function to handle editing a menu item
-  const handleEditMenuItem = () => {
-    const formDataToSubmit = {
-      ...formData,
-      restaurantId,
-      stock: JSON.stringify(formData.stock),
-    }
-    dispatch(updateMenuItem({ id: selectedMenu.id, formData: formDataToSubmit }))
-    setEditModalVisible(false)
-    handleCancel()
-  }
-
+  // Handle image changes
   const handleImageChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     setFormData((prevState) => ({
       ...prevState,
       itemImage: file,
-    }))
-    setPreviewImage(URL.createObjectURL(file))
-  }
+    }));
+    setPreviewImage(URL.createObjectURL(file));
+  };
 
+  // Handle stock changes
   const handleStockChange = (index, field, value) => {
-    const updatedStock = [...formData.stock]
-    updatedStock[index][field] = value
+    const updatedStock = [...formData.stock];
+    updatedStock[index][field] = value;
     setFormData((prevState) => ({
       ...prevState,
       stock: updatedStock,
-    }))
-  }
+    }));
+  };
 
+  // Add a new stock field
   const addStockField = () => {
     setFormData((prevState) => ({
       ...prevState,
       stock: [...prevState.stock, { inventoryId: '', quantity: '' }],
-    }))
-  }
+    }));
+  };
 
+  // Reset form and close modals
   const handleCancel = () => {
     setFormData({
       itemName: '',
@@ -103,314 +82,53 @@ const Menu = () => {
       itemImage: null,
       price: '',
       stock: [{ inventoryId: '', quantity: '' }],
-    })
-    setPreviewImage(null)
-    setModalVisible(false)
-  }
+    });
+    setPreviewImage(null);
+    setModalVisible(false);
+    setEditModalVisible(false);
+  };
 
-  const handledeleteMenuItem = () => {
-    dispatch(deleteMenuItem({ id: selectedMenu.id, restaurantId }))
-    dispatch(fetchMenuItems({ restaurantId }))
-    setDeleteModalVisible(false)
-  }
+  // Handle adding a new menu item
+  const handleAddMenuItem = async () => {
+    setIsSubmitting(true);
+    try {
+      const formDataToSubmit = { ...formData, restaurantId };
+      await dispatch(addMenuItem(formDataToSubmit)).unwrap();
+      handleCancel();
+    } catch (error) {
+      console.error('Failed to add menu item:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-  const handleAddMenuItem = () => {
-    const formDataToSubmit = { itemName, itemImage, price, categoryId, restaurantId, stock }
-    // formDataToSubmit.append('itemName', formData.itemName)
-    // formDataToSubmit.append('categoryId', formData.categoryId)
-    // formDataToSubmit.append('itemImage', formData.itemImage)
-    // formDataToSubmit.append('price', formData.price)
-    // formDataToSubmit.append('stock', JSON.stringify(formData.stock))
-    dispatch(addMenuItem(formDataToSubmit))
-    handleCancel()
-  }
+  // Handle editing a menu item
+  const handleEditMenuItem = async () => {
+    setIsSubmitting(true);
+    try {
+      const formDataToSubmit = { ...formData, restaurantId, stock: JSON.stringify(formData.stock) };
+      await dispatch(updateMenuItemStatus({ id: selectedMenu.id, formData: formDataToSubmit })).unwrap();
+      setEditModalVisible(false);
+      handleCancel();
+    } catch (error) {
+      console.error('Failed to update menu item:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-  // Render Edit Menu Modal
-  const renderEditMenuModal = () => (
-    <CModal visible={editModalVisible} onClose={handleCancel}>
-      <CModalHeader>
-        <CModalTitle>Edit Menu Item</CModalTitle>
-      </CModalHeader>
-      <CModalBody>
-        <CForm>
-          <CFormInput
-            type="text"
-            name="itemName"
-            label="Item Name"
-            value={formData.itemName}
-            onChange={handleInputChange}
-            placeholder="Enter item name"
-          />
-          <CFormSelect
-            name="categoryId"
-            label="Category Name"
-            value={formData.categoryId}
-            onChange={handleInputChange}
-          >
-            <option value="">Select a category</option>
-            {categories?.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </CFormSelect>
-          <CFormInput
-            type="number"
-            name="price"
-            label="Price"
-            value={formData.price}
-            onChange={handleInputChange}
-            placeholder="Enter price"
-          />
-          <CFormInput
-            type="file"
-            label="Item Image"
-            onChange={handleImageChange}
-            accept="image/*"
-          />
-          {previewImage && (
-            <img
-              src={previewImage}
-              alt="Preview"
-              className="img-thumbnail mt-2"
-              style={{ height: '100px' }}
-            />
-          )}
-
-          {formData?.stock?.map((stock, index) => (
-            <CRow key={index} className="align-items-center mb-2">
-              <CCol xs={6}>
-                <CFormSelect
-                  value={stock.inventoryId}
-                  onChange={(e) => handleStockChange(index, 'inventoryId', e.target.value)}
-                >
-                  <option value="">Select Inventory</option>
-                  {inventories.map((inventory) => (
-                    <option key={inventory.id} value={inventory.id}>
-                      {inventory.name}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-              <CCol xs={4}>
-                <CFormInput
-                  type="number"
-                  value={stock.quantity}
-                  onChange={(e) => handleStockChange(index, 'quantity', e.target.value)}
-                  placeholder="Quantity"
-                />
-              </CCol>
-              <CCol xs={2}>
-                {index === formData.stock.length - 1 && (
-                  <CButton color="success" onClick={addStockField}>
-                    Add
-                  </CButton>
-                )}
-              </CCol>
-            </CRow>
-          ))}
-        </CForm>
-      </CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={handleCancel}>
-          Cancel
-        </CButton>
-        <CButton color="primary" onClick={handleEditMenuItem}>
-          Save Changes
-        </CButton>
-      </CModalFooter>
-    </CModal>
-  )
-
-  const renderAddMenuItemModal = () => (
-    <CModal visible={modalVisible} onClose={handleCancel}>
-      <CModalHeader>
-        <CModalTitle>Add Menu Item</CModalTitle>
-      </CModalHeader>
-      <CModalBody>
-        <CForm>
-          <CFormInput
-            type="text"
-            name="itemName"
-            label="Item Name"
-            value={formData.itemName}
-            onChange={handleInputChange}
-            placeholder="Enter item name"
-          />
-          <CFormSelect
-            name="categoryId"
-            label="Category Name"
-            value={formData.categoryId}
-            onChange={handleInputChange}
-          >
-            <option value="">Select a category</option>
-            {categories?.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </CFormSelect>
-          <CFormInput
-            type="file"
-            label="Item Image"
-            onChange={handleImageChange}
-            accept="image/*"
-          />
-          {previewImage && (
-            <img
-              src={previewImage}
-              alt="Preview"
-              className="img-thumbnail mt-2"
-              style={{ height: '100px' }}
-            />
-          )}
-          <CFormInput
-            type="number"
-            name="price"
-            label="Price"
-            value={formData.price}
-            onChange={handleInputChange}
-            placeholder="Enter price"
-          />
-          {formData?.stock?.map((stock, index) => (
-            <CRow key={index} className="align-items-center mb-2">
-              <CCol xs={6}>
-                <CFormSelect
-                  value={stock.inventoryId}
-                  onChange={(e) => handleStockChange(index, 'inventoryId', e.target.value)}
-                >
-                  <option value="">Select Inventory</option>
-                  {inventories.map((inventory) => (
-                    <option key={inventory.id} value={inventory.id}>
-                      {inventory.name}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-              <CCol xs={4}>
-                <CFormInput
-                  type="number"
-                  value={stock.quantity}
-                  onChange={(e) => handleStockChange(index, 'quantity', e.target.value)}
-                  placeholder="Quantity"
-                />
-              </CCol>
-              <CCol xs={2}>
-                {index === formData.stock.length - 1 && (
-                  <CButton color="success" onClick={addStockField}>
-                    Add
-                  </CButton>
-                )}
-              </CCol>
-            </CRow>
-          ))}
-        </CForm>
-      </CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={handleCancel}>
-          Cancel
-        </CButton>
-        <CButton color="primary" onClick={handleAddMenuItem}>
-          Add Menu Item
-        </CButton>
-      </CModalFooter>
-    </CModal>
-  )
-
-  const renderdeleteMenuItemModal = () => (
-    <CModal visible={deleteModalVisible} onClose={() => setDeleteModalVisible(false)}>
-      <CModalHeader>
-        <CModalTitle>Delete Menu Item</CModalTitle>
-      </CModalHeader>
-      <CModalBody>Are you sure you want to delete this menu item?</CModalBody>
-      <CModalFooter>
-        <CButton color="secondary" onClick={() => setDeleteModalVisible(false)}>
-          Cancel
-        </CButton>
-        <CButton color="danger" onClick={handledeleteMenuItem} disabled={menuItemsLoading}>
-          {menuItemsLoading ? 'Deleting...' : 'Delete'}
-        </CButton>
-      </CModalFooter>
-    </CModal>
-  )
-
-  const columns = [
-    {
-      field: 'itemImage',
-      headerName: 'Image',
-      flex: 1,
-      renderCell: (params) => (
-        <img src={params.value} alt={params.row.itemName} style={{ maxWidth: '100px' }} />
-      ),
-    },
-    {
-      field: 'itemName',
-      headerName: 'Item Name',
-      flex: 1,
-    },
-    { field: 'price', headerName: 'Price', flex: 1 },
-
-    {
-      field: 'status',
-      headerName: 'Status',
-      flex: 1,
-      renderCell: (params) => {
-        const dispatch = useDispatch();
-  
-        const handleToggle = async () => {
-          const newStatus = params.row.status === 1 ? 0 : 1; // Toggle status
-          await dispatch(updateMenuItemStatus({ id: params.row.id, status: newStatus }));
-        };
-  
-        return (
-          <CFormSwitch
-            className="mx-1"
-            color="primary"
-            shape="rounded-pill"
-            checked={params.row.status === 1}
-            onChange={handleToggle}
-          />
-        );
-      },
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      flex: 1,
-      renderCell: (params) => (
-        <div>
-          <CButton
-            color="info"
-            size="sm"
-            onClick={() => {
-              setSelectedMenu(params.row)
-              setEditModalVisible(true)
-              setFormData({
-                itemName: params.row.itemName,
-                categoryId: params.row.categoryId,
-                itemImage: null,
-                price: params.row.price,
-              })
-              setPreviewImage(params.row.itemImage)
-            }}
-          >
-            <CIcon icon={cilPencil} />
-          </CButton>
-          <CButton
-            color="danger"
-            size="sm"
-            className="ms-2"
-            onClick={() => {
-              setSelectedMenu(params.row)
-              setDeleteModalVisible(true)
-            }}
-          >
-            <CIcon icon={cilTrash} />
-          </CButton>
-        </div>
-      ),
-    },
-  ]
+  // Handle deleting a menu item
+  const handledeleteMenuItem = async () => {
+    setIsSubmitting(true);
+    try {
+      await dispatch(deleteMenuItem({ id: selectedMenu.id, restaurantId })).unwrap();
+      setDeleteModalVisible(false);
+    } catch (error) {
+      console.error('Failed to delete menu item:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
@@ -427,22 +145,66 @@ const Menu = () => {
           Add Menu
         </CButton>
       </div>
-      <div style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}>
-        <DataGrid
-          rows={menuItems?.menus || []}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
-          menuItemsLoading={menuItemsLoading}
-          autoHeight
-          slots={{ Toolbar: CustomToolbar }}
+      <MenuItemList
+        menuItems={menuItems}
+        menuItemsLoading={menuItemsLoading}
+        setSelectedMenu={setSelectedMenu}
+        setEditModalVisible={setEditModalVisible}
+        setDeleteModalVisible={setDeleteModalVisible}
+      />
+      <CommonModal
+        visible={modalVisible}
+        onClose={handleCancel}
+        title="Add Menu Item"
+        onConfirm={handleAddMenuItem}
+        confirmButtonText={isSubmitting ? <CSpinner size="sm" /> : 'Add Menu Item'}
+        confirmButtonColor="primary"
+        isLoading={isSubmitting}
+      >
+        <MenuItemForm
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleImageChange={handleImageChange}
+          handleStockChange={handleStockChange}
+          addStockField={addStockField}
+          categories={categories}
+          inventories={inventories}
+          previewImage={previewImage}
         />
-      </div>
-      {renderAddMenuItemModal()}
-      {renderEditMenuModal()}
-      {renderdeleteMenuItemModal()}
+      </CommonModal>
+      <CommonModal
+        visible={editModalVisible}
+        onClose={handleCancel}
+        title="Edit Menu Item"
+        onConfirm={handleEditMenuItem}
+        confirmButtonText={isSubmitting ? <CSpinner size="sm" /> : 'Save Changes'}
+        confirmButtonColor="primary"
+        isLoading={isSubmitting}
+      >
+        <MenuItemForm
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleImageChange={handleImageChange}
+          handleStockChange={handleStockChange}
+          addStockField={addStockField}
+          categories={categories}
+          inventories={inventories}
+          previewImage={previewImage}
+        />
+      </CommonModal>
+      <CommonModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        title="Delete Menu Item"
+        onConfirm={handledeleteMenuItem}
+        confirmButtonText={isSubmitting ? <CSpinner size="sm" /> : 'Delete'}
+        confirmButtonColor="danger"
+        isLoading={isSubmitting}
+      >
+        Are you sure you want to delete this menu item?
+      </CommonModal>
     </div>
-  )
-}
+  );
+};
 
-export default Menu
+export default Menu;
