@@ -13,6 +13,7 @@ import {
   CRow,
   CCol,
   CSpinner,
+  CFormSwitch,
 } from '@coreui/react'
 import { DataGrid } from '@mui/x-data-grid'
 import CIcon from '@coreui/icons-react'
@@ -20,7 +21,7 @@ import { cilPencil, cilTrash } from '@coreui/icons'
 import CustomToolbar from '../../utils/CustomToolbar'
 import { fetchCategories } from '../../redux/slices/categorySlice'
 import { fetchInventories } from '../../redux/slices/stockSlice'
-import { addMenuItem, deleteMenuItem, fetchMenuItems } from '../../redux/slices/menuSlice'
+import { addMenuItem, deleteMenuItem, fetchMenuItems, updateMenuItemStatus } from '../../redux/slices/menuSlice'
 
 const Menu = () => {
   const dispatch = useDispatch()
@@ -348,6 +349,30 @@ const Menu = () => {
       flex: 1,
     },
     { field: 'price', headerName: 'Price', flex: 1 },
+
+    {
+      field: 'status',
+      headerName: 'Status',
+      flex: 1,
+      renderCell: (params) => {
+        const dispatch = useDispatch();
+  
+        const handleToggle = async () => {
+          const newStatus = params.row.status === 1 ? 0 : 1; // Toggle status
+          await dispatch(updateMenuItemStatus({ id: params.row.id, status: newStatus }));
+        };
+  
+        return (
+          <CFormSwitch
+            className="mx-1"
+            color="primary"
+            shape="rounded-pill"
+            checked={params.row.status === 1}
+            onChange={handleToggle}
+          />
+        );
+      },
+    },
     {
       field: 'actions',
       headerName: 'Actions',

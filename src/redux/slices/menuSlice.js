@@ -101,6 +101,30 @@ export const deleteMenuItem = createAsyncThunk(
   }
 );
 
+// Update menu item status
+export const updateMenuItemStatus = createAsyncThunk(
+  'menu/updateMenuItemStatus',
+  async ({ id, status }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+
+      const response = await axios.put(
+        `${BASE_URL}/menus/status`,
+        { id, status },
+        { headers }
+      );
+
+      return { id, status: response.data.status };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update menu status');
+    }
+  }
+);
+
 // Slice
 const menuSlice = createSlice({
   name: 'menuItems',
@@ -181,6 +205,27 @@ const menuSlice = createSlice({
         state.error = action.payload;
         toast.error(action.payload || 'Failed to delete menu item.');
       });
+
+      // Update menu item status
+    builder
+    .addCase(updateMenuItemStatus.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(updateMenuItemStatus.fulfilled, (state, action) => {
+      state.loading = false;
+      const { id, status } = action.payload;
+      const menuItem = state.menuItems.find((item) => item.id === id);
+      if (menuItem) {
+        menuItem.status = status;
+      }
+      toast.success('Menu item status updated successfully!');
+    })
+    .addCase(updateMenuItemStatus.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      toast.error(action.payload || 'Failed to update menu status.');
+    });
   },
 });
 
