@@ -27,7 +27,7 @@ export const fetchMenuItems = createAsyncThunk(
 // Add a new menu item
 export const addMenuItem = createAsyncThunk(
   'menu/addMenuItem',
-  async ({itemName,itemImage,price,categoryId,restaurantId,stock  }, { rejectWithValue }) => {
+  async ({ itemName, itemImage, price, categoryId, restaurantId, stock }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('authToken');
       const headers = {
@@ -39,9 +39,14 @@ export const addMenuItem = createAsyncThunk(
       formData.append('restaurantId', restaurantId);
       formData.append('itemName', itemName);
       formData.append('price', price);
-      formData.append('description', description);
       formData.append('categoryId', categoryId);
-      formData.append('categoryId', categoryId);
+
+      // Append stock data as a JSON string
+      if (stock && stock.length > 0) {
+        formData.append('stock', JSON.stringify(stock));
+      }
+
+      // Append the image file if it exists
       if (itemImage) {
         formData.append('itemImage', itemImage);
       }
