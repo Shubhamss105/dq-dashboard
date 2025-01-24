@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
-import { CButton, CFormSwitch } from '@coreui/react'
+import { CButton, CFormSwitch, CSpinner } from '@coreui/react'
 import { useDispatch } from 'react-redux'
 import { cilPencil, cilTrash } from '@coreui/icons'
 import { DataGrid } from '@mui/x-data-grid'
 import CustomToolbar from '../utils/CustomToolbar'
 import CIcon from '@coreui/icons-react'
-import { updateMenuItemStatus } from '../redux/slices/menuSlice'
+import { updateMenuItemStatus, fetchMenuItems } from '../redux/slices/menuSlice'
+import { useMediaQuery } from '@mui/material';
 
 const MenuItemList = ({ menuItems, menuItemsLoading, setSelectedMenu, setEditModalVisible, setDeleteModalVisible }) => {
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     const dispatch = useDispatch()
 
@@ -15,7 +17,8 @@ const MenuItemList = ({ menuItems, menuItemsLoading, setSelectedMenu, setEditMod
         {
             field: 'itemImage',
             headerName: 'Image',
-            flex: 1,
+            flex: isMobile ? undefined : 1,
+            minWidth: isMobile ? 150 : undefined,
             renderCell: (params) => (
                 <img src={params.value} alt={params.row.itemName} style={{ maxWidth: '100px' }} />
             ),
@@ -23,34 +26,71 @@ const MenuItemList = ({ menuItems, menuItemsLoading, setSelectedMenu, setEditMod
         {
             field: 'itemName',
             headerName: 'Item Name',
-            flex: 1,
+            flex: isMobile ? undefined : 1,
+            minWidth: isMobile ? 150 : undefined,
         },
-        { field: 'price', headerName: 'Price', flex: 1 },
+        {
+            field: 'price', headerName: 'Price', flex: isMobile ? undefined : 1,
+            minWidth: isMobile ? 150 : undefined,
+        },
         {
             field: 'status',
             headerName: 'Status',
-            flex: 1,
+            flex: isMobile ? undefined : 1,
+            minWidth: isMobile ? 150 : undefined,
             renderCell: (params) => {
+                const [loading, setLoading] = React.useState(false);
+                const [localStatus, setLocalStatus] = React.useState(params.row.status);
+
+                React.useEffect(() => {
+                    setLocalStatus(params.row.status);
+                }, [params.row.status]);
+
                 const handleToggle = async () => {
-                    const newStatus = params.row.status === 1 ? 0 : 1
-                    await dispatch(updateMenuItemStatus({ id: params.row.id, status: newStatus }))
-                }
+                    try {
+                        setLoading(true);
+                        const newStatus = localStatus === 0 ? 1 : 0;
+                        setLocalStatus(newStatus);
+
+                        await dispatch(
+                            updateMenuItemStatus({
+                                id: params.row.id,
+                                status: newStatus,
+                            })
+                        ).unwrap();
+                        await dispatch(fetchMenuItems({ restaurantId }));
+
+                        toast.success('Menu item status updated successfully!');
+                    } catch (error) {
+                        toast.error(error || 'Status update failed');
+                    } finally {
+                        setLoading(false);
+                    }
+                };
 
                 return (
-                    <CFormSwitch
-                        className="mx-1"
-                        color="primary"
-                        shape="rounded-pill"
-                        checked={params.row.status === 1}
-                        onChange={handleToggle}
-                    />
-                )
+                    <div className="d-flex align-items-center">
+                        {loading ? (
+                            <CSpinner size="sm" />
+                        ) : (
+                            <CFormSwitch
+                                className="mx-1"
+                                color="primary"
+                                shape="rounded-pill"
+                                checked={localStatus === 0}
+                                onChange={handleToggle}
+                                label={localStatus === 0 ? 'Active' : 'Inactive'}
+                            />
+                        )}
+                    </div>
+                );
             },
         },
         {
             field: 'actions',
             headerName: 'Actions',
-            flex: 1,
+            flex: isMobile ? undefined : 1,
+            minWidth: isMobile ? 150 : undefined,
             renderCell: (params) => (
                 <div>
                     <CButton
@@ -82,8 +122,9 @@ const MenuItemList = ({ menuItems, menuItemsLoading, setSelectedMenu, setEditMod
     return (
         <div style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}>
             <DataGrid
-                rows={menuItems?.menus || []}
+                rows={menuItems || []}
                 columns={columns}
+                getRowId={(row) => row.id}
                 pageSize={5}
                 rowsPerPageOptions={[5, 10, 20]}
                 loading={menuItemsLoading}

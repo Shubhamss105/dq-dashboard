@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { CButton, CSpinner } from '@coreui/react';
+import { toast } from 'react-toastify';
 import CommonModal from '../../components/CommonModal';
 import MenuItemForm from '../../components/MenuItemForm';
 import MenuItemList from '../../components/MenuItemList';
@@ -25,7 +26,7 @@ const Menu = () => {
     categoryId: '',
     itemImage: null,
     price: '',
-    stock: [{ inventoryId: '', quantity: '' }],
+    stockItems: [{ stockId: '', quantity: '' }],
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,11 +59,11 @@ const Menu = () => {
 
   // Handle stock changes
   const handleStockChange = (index, field, value) => {
-    const updatedStock = [...formData.stock];
+    const updatedStock = [...formData.stockItems];
     updatedStock[index][field] = value;
     setFormData((prevState) => ({
       ...prevState,
-      stock: updatedStock,
+      stockItems: updatedStock,
     }));
   };
 
@@ -70,7 +71,7 @@ const Menu = () => {
   const addStockField = () => {
     setFormData((prevState) => ({
       ...prevState,
-      stock: [...prevState.stock, { inventoryId: '', quantity: '' }],
+      stockItems: [...prevState.stockItems, { stockId: '', quantity: '' }],
     }));
   };
 
@@ -81,32 +82,36 @@ const Menu = () => {
       categoryId: '',
       itemImage: null,
       price: '',
-      stock: [{ inventoryId: '', quantity: '' }],
+      stockItems: [{ stockId: '', quantity: '' }],
     });
     setPreviewImage(null);
     setModalVisible(false);
     setEditModalVisible(false);
   };
 
-  // Handle adding a new menu item
   const handleAddMenuItem = async () => {
     setIsSubmitting(true);
     try {
-      const formDataToSubmit = { ...formData, restaurantId };
-      await dispatch(addMenuItem(formDataToSubmit)).unwrap();
+      await dispatch(addMenuItem({ ...formData, restaurantId })).unwrap();
+      
+      await dispatch(fetchMenuItems({ restaurantId }));
       handleCancel();
+      toast.success('Menu item added successfully!');
     } catch (error) {
-      console.error('Failed to add menu item:', error);
+      toast.error(error.message || 'Failed to add menu item.');
     } finally {
       setIsSubmitting(false);
     }
   };
+  
+  
+  
 
   // Handle editing a menu item
   const handleEditMenuItem = async () => {
     setIsSubmitting(true);
     try {
-      const formDataToSubmit = { ...formData, restaurantId, stock: JSON.stringify(formData.stock) };
+      const formDataToSubmit = { ...formData, restaurantId, stockItems: JSON.stringify(formData.stockItems) };
       await dispatch(updateMenuItemStatus({ id: selectedMenu.id, formData: formDataToSubmit })).unwrap();
       setEditModalVisible(false);
       handleCancel();
@@ -181,16 +186,6 @@ const Menu = () => {
         confirmButtonColor="primary"
         isLoading={isSubmitting}
       >
-        <MenuItemForm
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleImageChange={handleImageChange}
-          handleStockChange={handleStockChange}
-          addStockField={addStockField}
-          categories={categories}
-          inventories={inventories}
-          previewImage={previewImage}
-        />
       </CommonModal>
       <CommonModal
         visible={deleteModalVisible}

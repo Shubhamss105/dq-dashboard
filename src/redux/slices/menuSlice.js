@@ -17,17 +17,19 @@ export const fetchMenuItems = createAsyncThunk(
         `${BASE_URL}/menu?restaurantId=${restaurantId}`,
         { headers }
       );
-      return response.data;
+      return response.data.data.menus;
     } catch (error) {
       return rejectWithValue(error.response?.data?.error || 'Failed to fetch menu items');
     }
   }
 );
 
-// Add a new menu item
 export const addMenuItem = createAsyncThunk(
   'menu/addMenuItem',
-  async ({ itemName, itemImage, price, categoryId, restaurantId, stock }, { rejectWithValue }) => {
+  async (
+    { itemName, itemImage, price, categoryId, restaurantId, stockItems },
+    { rejectWithValue }
+  ) => {
     try {
       const token = localStorage.getItem('authToken');
       const headers = {
@@ -41,9 +43,12 @@ export const addMenuItem = createAsyncThunk(
       formData.append('price', price);
       formData.append('categoryId', categoryId);
 
-      // Append stock data as a JSON string
-      if (stock && stock.length > 0) {
-        formData.append('stock', JSON.stringify(stock));
+      // Append each stock item individually
+      if (stockItems && stockItems.length > 0) {
+        stockItems.forEach((stock, index) => {
+          formData.append(`stockItems[${index}][stockId]`, stock.stockId);
+          formData.append(`stockItems[${index}][quantity]`, stock.quantity);
+        });
       }
 
       // Append the image file if it exists
@@ -58,6 +63,8 @@ export const addMenuItem = createAsyncThunk(
     }
   }
 );
+
+
 
 // Update a menu item
 export const updateMenuItem = createAsyncThunk(
@@ -122,7 +129,7 @@ export const updateMenuItemStatus = createAsyncThunk(
         { id, status },
         { headers }
       );
-
+      fetchMenuItems();
       return { id, status: response.data.status };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update menu status');
@@ -148,7 +155,7 @@ const menuSlice = createSlice({
       })
       .addCase(fetchMenuItems.fulfilled, (state, action) => {
         state.loading = false;
-        state.menuItems = action.payload.data;
+        state.menuItems = action.payload;
       })
       .addCase(fetchMenuItems.rejected, (state, action) => {
         state.loading = false;
@@ -164,13 +171,14 @@ const menuSlice = createSlice({
       })
       .addCase(addMenuItem.fulfilled, (state, action) => {
         state.loading = false;
-        state.menuItems.push(action.payload.data);
-        toast.success('Menu item added successfully!');
+        state.menuItems = [...state.menuItems, action.payload.data.menu];
+        // state.menuItems = [...state.menuItems, action.payload]; 
+        // toast.success('Menu item added successfully!');
       })
       .addCase(addMenuItem.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error(action.payload || 'Failed to add menu item.');
+        // toast.error(action.payload || 'Failed to add menu item.');
       });
 
     // Update menu item
@@ -181,7 +189,7 @@ const menuSlice = createSlice({
       })
       .addCase(updateMenuItem.fulfilled, (state, action) => {
         state.loading = false;
-        const updatedItem = action.payload.data;
+        const updatedItem = action.payload;
         const index = state.menuItems.findIndex((item) => item.id === updatedItem.id);
         if (index !== -1) {
           state.menuItems[index] = updatedItem;
@@ -202,7 +210,7 @@ const menuSlice = createSlice({
       })
       .addCase(deleteMenuItem.fulfilled, (state, action) => {
         state.loading = false;
-        state.menuItems = state.menuItems.filter((item) => item.id !== action.payload.id);
+        state.menuItems = state.menuItems.filter((item) => item.id !== action.payload.id); 
         toast.success('Menu item deleted successfully!');
       })
       .addCase(deleteMenuItem.rejected, (state, action) => {

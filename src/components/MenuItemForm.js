@@ -47,12 +47,12 @@ const MenuItemForm = ({ formData, handleInputChange, handleImageChange, handleSt
         onChange={handleInputChange}
         placeholder="Enter price"
       />
-      {formData?.stock?.map((stock, index) => (
+      {formData?.stockItems?.map((stock, index) => (
         <CRow key={index} className="align-items-center mb-2">
           <CCol xs={6}>
             <CFormSelect
-              value={stock.inventoryId}
-              onChange={(e) => handleStockChange(index, 'inventoryId', e.target.value)}
+              value={stock.stockId}
+              onChange={(e) => handleStockChange(index, 'stockId', e.target.value)}
             >
               <option value="">Select Inventory</option>
               {inventories?.map((inventory) => (
@@ -71,7 +71,7 @@ const MenuItemForm = ({ formData, handleInputChange, handleImageChange, handleSt
             />
           </CCol>
           <CCol xs={2}>
-            {index === formData.stock.length - 1 && (
+            {index === formData.stockItems.length - 1 && (
               <CButton color="success" onClick={addStockField}>
                 Add
               </CButton>
