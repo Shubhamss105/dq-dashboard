@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { CButton, CFormSwitch, CSpinner } from '@coreui/react'
 import { useDispatch } from 'react-redux'
-import { cilPencil, cilTrash } from '@coreui/icons'
+import { cilPencil, cilTrash, cilStorage } from '@coreui/icons'
 import { DataGrid } from '@mui/x-data-grid'
 import CustomToolbar from '../utils/CustomToolbar'
 import CIcon from '@coreui/icons-react'
 import { updateMenuItemStatus, fetchMenuItems } from '../redux/slices/menuSlice'
 import { useMediaQuery } from '@mui/material';
 
-const MenuItemList = ({ menuItems, menuItemsLoading, setSelectedMenu, setEditModalVisible, setDeleteModalVisible }) => {
+const MenuItemList = ({ menuItems, menuItemsLoading, setSelectedMenu, setEditModalVisible, setDeleteModalVisible, setEditStockModalVisible }) => {
     const isMobile = useMediaQuery('(max-width:600px)');
 
     const dispatch = useDispatch()
@@ -90,9 +90,19 @@ const MenuItemList = ({ menuItems, menuItemsLoading, setSelectedMenu, setEditMod
             field: 'actions',
             headerName: 'Actions',
             flex: isMobile ? undefined : 1,
-            minWidth: isMobile ? 150 : undefined,
+            minWidth: isMobile ? 200 : undefined,
             renderCell: (params) => (
                 <div>
+                    {/* <CButton
+                        color="warning"
+                        size="sm"
+                        className='mx-1'
+                        onClick={() => {
+                            setSelectedMenu(params.row);
+                            setEditStockModalVisible(true)
+                        }}
+                    >Edit Stock
+                    </CButton> */}
                     <CButton
                         color="info"
                         size="sm"
@@ -103,10 +113,12 @@ const MenuItemList = ({ menuItems, menuItemsLoading, setSelectedMenu, setEditMod
                     >
                         <CIcon icon={cilPencil} />
                     </CButton>
+
+
                     <CButton
                         color="danger"
                         size="sm"
-                        className="ms-2"
+                        className="ms-1"
                         onClick={() => {
                             setSelectedMenu(params.row)
                             setDeleteModalVisible(true)

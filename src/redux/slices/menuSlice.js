@@ -69,25 +69,13 @@ export const addMenuItem = createAsyncThunk(
 // Update a menu item
 export const updateMenuItem = createAsyncThunk(
   'menu/updateMenuItem',
-  async ({ id, restaurantId, itemName, price, description, category, image }, { rejectWithValue }) => {
+  async ({ id, formData, token}, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken');
       const headers = {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
       };
-
-      const formData = new FormData();
-      formData.append('restaurantId', restaurantId);
-      formData.append('itemName', itemName);
-      formData.append('price', price);
-      formData.append('description', description);
-      formData.append('category', category);
-      if (image) {
-        formData.append('image', image);
-      }
-
-      const response = await axios.put(`${BASE_URL}/menu/${id}`, formData, { headers });
+      const response = await axios.post(`${BASE_URL}/menu/update/${id}`, formData, { headers });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update menu item');
@@ -194,12 +182,10 @@ const menuSlice = createSlice({
         if (index !== -1) {
           state.menuItems[index] = updatedItem;
         }
-        toast.success('Menu item updated successfully!');
       })
       .addCase(updateMenuItem.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error(action.payload || 'Failed to update menu item.');
       });
 
     // Delete menu item
