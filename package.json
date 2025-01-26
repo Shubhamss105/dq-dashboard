@@ -33,6 +33,7 @@
     "@popperjs/core": "^2.11.8",
     "@reduxjs/toolkit": "^2.4.0",
     "axios": "^1.7.9",
+    "bootstrap": "^5.3.3",
     "chart.js": "^4.4.6",
     "classnames": "^2.5.1",
     "core-js": "^3.39.0",

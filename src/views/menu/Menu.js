@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { CButton, CSpinner } from '@coreui/react';
+import { toast } from 'react-toastify';
+import { addMenuItem, deleteMenuItem, fetchMenuItems, updateMenuItem } from '../../redux/slices/menuSlice';
 import CommonModal from '../../components/CommonModal';
 import MenuItemForm from '../../components/MenuItemForm';
 import MenuItemList from '../../components/MenuItemList';
+import EditMenuItem from '../../components/EditMenuItem';
+import EditStockModal from '../../components/EditStockModal';
 import { fetchCategories } from '../../redux/slices/categorySlice';
 import { fetchInventories } from '../../redux/slices/stockSlice';
-import { addMenuItem, deleteMenuItem, fetchMenuItems, updateMenuItemStatus } from '../../redux/slices/menuSlice';
 
 const Menu = () => {
   const dispatch = useDispatch();
@@ -25,10 +28,13 @@ const Menu = () => {
     categoryId: '',
     itemImage: null,
     price: '',
-    stock: [{ inventoryId: '', quantity: '' }],
+    stockItems: [{ stockId: '', quantity: '' }],
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [editStockModalVisible, setEditStockModalVisible] = useState(false);
+  const [selectedStockItems, setSelectedStockItems] = useState([]);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -36,6 +42,20 @@ const Menu = () => {
     dispatch(fetchInventories({ restaurantId }));
     dispatch(fetchMenuItems({ restaurantId }));
   }, [dispatch, restaurantId, token]);
+
+  // Menu.js
+  useEffect(() => {
+    if (selectedMenu) {
+      setFormData({
+        itemName: selectedMenu.itemName,
+        categoryId: selectedMenu.categoryId,
+        itemImage: null,
+        price: selectedMenu.price,
+        stockItems: selectedMenu.stockItems || [{ stockId: '', quantity: '' }],
+      });
+      setPreviewImage(selectedMenu.itemImage);
+    }
+  }, [selectedMenu]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -58,11 +78,11 @@ const Menu = () => {
 
   // Handle stock changes
   const handleStockChange = (index, field, value) => {
-    const updatedStock = [...formData.stock];
+    const updatedStock = [...formData.stockItems];
     updatedStock[index][field] = value;
     setFormData((prevState) => ({
       ...prevState,
-      stock: updatedStock,
+      stockItems: updatedStock,
     }));
   };
 
@@ -70,7 +90,7 @@ const Menu = () => {
   const addStockField = () => {
     setFormData((prevState) => ({
       ...prevState,
-      stock: [...prevState.stock, { inventoryId: '', quantity: '' }],
+      stockItems: [...prevState.stockItems, { stockId: '', quantity: '' }],
     }));
   };
 
@@ -81,37 +101,77 @@ const Menu = () => {
       categoryId: '',
       itemImage: null,
       price: '',
-      stock: [{ inventoryId: '', quantity: '' }],
+      stockItems: [{ stockId: '', quantity: '' }],
     });
     setPreviewImage(null);
     setModalVisible(false);
     setEditModalVisible(false);
   };
 
-  // Handle adding a new menu item
   const handleAddMenuItem = async () => {
     setIsSubmitting(true);
     try {
-      const formDataToSubmit = { ...formData, restaurantId };
-      await dispatch(addMenuItem(formDataToSubmit)).unwrap();
+      await dispatch(addMenuItem({ ...formData, restaurantId })).unwrap();
+
+      await dispatch(fetchMenuItems({ restaurantId }));
       handleCancel();
+      toast.success('Menu item added successfully!');
     } catch (error) {
-      console.error('Failed to add menu item:', error);
+      toast.error(error.message || 'Failed to add menu item.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+    // Open the edit stock modal
+    const handleEditStock = (stockItems) => {
+      setSelectedStockItems(stockItems);
+      setEditStockModalVisible(true);
+    };
+
+     // Save changes to stock items
+  const handleSaveStock = (updatedStockItems) => {
+    // Update the state or make an API call to save the changes
+    console.log('Updated Stock Items:', updatedStockItems);
+    // Example: Update the formData state
+    setFormData((prevState) => ({
+      ...prevState,
+      stockItems: updatedStockItems,
+    }));
   };
 
   // Handle editing a menu item
   const handleEditMenuItem = async () => {
     setIsSubmitting(true);
     try {
-      const formDataToSubmit = { ...formData, restaurantId, stock: JSON.stringify(formData.stock) };
-      await dispatch(updateMenuItemStatus({ id: selectedMenu.id, formData: formDataToSubmit })).unwrap();
-      setEditModalVisible(false);
+      const formDataToSend = new FormData();
+
+      // formDataToSend.append('restaurantId', restaurantId)
+      formDataToSend.append('itemName', formData.itemName);
+      formDataToSend.append('categoryId', formData.categoryId);
+      formDataToSend.append('price', formData.price);
+
+      // Append image only if it's a new file
+      if (formData.itemImage instanceof File) {
+        formDataToSend.append('itemImage', formData.itemImage);
+      }
+
+      // Send the request
+      await dispatch(updateMenuItem({
+        id: selectedMenu.id,
+        formData: formDataToSend,
+        restaurantId,
+        token
+      })).unwrap();
+
+      // Refresh the menu items list
+      await dispatch(fetchMenuItems({ restaurantId }));
+
+      // Close the modal and reset form
       handleCancel();
+      toast.success('Menu item updated successfully!');
     } catch (error) {
-      console.error('Failed to update menu item:', error);
+      toast.error(error.message || 'Failed to update menu item.');
     } finally {
       setIsSubmitting(false);
     }
@@ -151,15 +211,30 @@ const Menu = () => {
         setSelectedMenu={setSelectedMenu}
         setEditModalVisible={setEditModalVisible}
         setDeleteModalVisible={setDeleteModalVisible}
+        setEditStockModalVisible={setEditStockModalVisible}
+      />
+       {/* Edit Stock Modal */}
+       <EditStockModal
+        visible={editStockModalVisible}
+        onClose={() => setEditStockModalVisible(false)}
+        stockItems={selectedMenu?.stockItems || []}
+        inventories={inventories}
+        setStockItems={(updatedStockItems) =>
+          setFormData((prevState) => ({
+            ...prevState,
+            stockItems: updatedStockItems,
+          }))
+        }
       />
       <CommonModal
         visible={modalVisible}
         onClose={handleCancel}
         title="Add Menu Item"
         onConfirm={handleAddMenuItem}
-        confirmButtonText={isSubmitting ? <CSpinner size="sm" /> : 'Add Menu Item'}
+        confirmButtonText={isSubmitting ? <CSpinner size="sm" /> : 'Save Changes'}
         confirmButtonColor="primary"
         isLoading={isSubmitting}
+        formId="menuItemForm"
       >
         <MenuItemForm
           formData={formData}
@@ -170,7 +245,10 @@ const Menu = () => {
           categories={categories}
           inventories={inventories}
           previewImage={previewImage}
+          onSubmit={handleAddMenuItem}
+          formId="menuItemForm"
         />
+
       </CommonModal>
       <CommonModal
         visible={editModalVisible}
@@ -181,15 +259,13 @@ const Menu = () => {
         confirmButtonColor="primary"
         isLoading={isSubmitting}
       >
-        <MenuItemForm
+        <EditMenuItem
           formData={formData}
           handleInputChange={handleInputChange}
           handleImageChange={handleImageChange}
-          handleStockChange={handleStockChange}
-          addStockField={addStockField}
           categories={categories}
-          inventories={inventories}
           previewImage={previewImage}
+          isEdit={true}
         />
       </CommonModal>
       <CommonModal

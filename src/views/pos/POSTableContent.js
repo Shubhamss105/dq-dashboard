@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { CContainer, CRow, CCol, CCard, CCardHeader, CCardBody, CButton, CInputGroup, CFormInput, CFormSelect, CCardFooter, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CForm, CFormTextarea, CSpinner } from '@coreui/react';
+import { CContainer, CRow, CCol, CButton, CCardFooter } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { useParams } from 'react-router-dom';
 import { cilPlus, cilTrash, cilSearch } from '@coreui/icons';
@@ -93,7 +93,7 @@ const POSTableContent = () => {
     customer.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredMenuItems = menuItems?.menus?.filter((product) =>
+  const filteredMenuItems = menuItems?.filter((product) =>
     product.itemName?.toLowerCase().includes(searchProduct.toLowerCase())
   );
 
