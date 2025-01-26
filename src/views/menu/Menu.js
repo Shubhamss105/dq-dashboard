@@ -6,11 +6,28 @@ import MenuItemForm from '../../components/MenuItemForm';
 import MenuItemList from '../../components/MenuItemList';
 import { fetchCategories } from '../../redux/slices/categorySlice';
 import { fetchInventories } from '../../redux/slices/stockSlice';
-import { addMenuItem, deleteMenuItem, fetchMenuItems, updateMenuItemStatus } from '../../redux/slices/menuSlice';
+import { 
+  addMenuItem, 
+  deleteMenuItem, 
+  fetchMenuItems, 
+  updateMenuItem,
+  updateMenuItemStatus 
+} from '../../redux/slices/menuSlice';
 
 const Menu = () => {
   const dispatch = useDispatch();
-  const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems);
+  const { 
+    menuItems, 
+    loading 
+  } = useSelector((state) => state.menuItems);
+  
+  const { 
+    fetchLoading: menuItemsLoading,
+    addLoading,
+    updateLoading,
+    deleteLoading 
+  } = loading || {};
+  
   const { categories, loading: categoryLoading } = useSelector((state) => state.category);
   const { inventories, loading: inventoryLoading } = useSelector((state) => state.inventories);
   const restaurantId = useSelector((state) => state.auth.restaurantId);
@@ -20,15 +37,18 @@ const Menu = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState(null);
-  const [formData, setFormData] = useState({
+  
+  const initialFormState = {
     itemName: '',
-    categoryId: '',
     itemImage: null,
     price: '',
-    stock: [{ inventoryId: '', quantity: '' }],
-  });
+    categoryId: '',
+    restaurantId,
+    stockItems: [{ stockId: '', quantity: '' }],
+  };
+
+  const [formData, setFormData] = useState(initialFormState);
   const [previewImage, setPreviewImage] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -40,126 +60,139 @@ const Menu = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   // Handle image changes
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setFormData((prevState) => ({
-      ...prevState,
-      itemImage: file,
-    }));
-    setPreviewImage(URL.createObjectURL(file));
+    setFormData(prev => ({ ...prev, itemImage: file }));
+    setPreviewImage(file ? URL.createObjectURL(file) : null);
   };
 
   // Handle stock changes
   const handleStockChange = (index, field, value) => {
-    const updatedStock = [...formData.stock];
-    updatedStock[index][field] = value;
-    setFormData((prevState) => ({
-      ...prevState,
-      stock: updatedStock,
+    setFormData(prev => ({
+      ...prev,
+      stockItems: prev.stockItems.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
     }));
   };
 
   // Add a new stock field
   const addStockField = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      stock: [...prevState.stock, { inventoryId: '', quantity: '' }],
+    setFormData(prev => ({
+      ...prev,
+      stockItems: [...prev.stockItems, { stockId: '', quantity: '' }]
     }));
   };
 
   // Reset form and close modals
-  const handleCancel = () => {
-    setFormData({
-      itemName: '',
-      categoryId: '',
-      itemImage: null,
-      price: '',
-      stock: [{ inventoryId: '', quantity: '' }],
-    });
+  const resetForm = () => {
+    setFormData(initialFormState);
     setPreviewImage(null);
     setModalVisible(false);
     setEditModalVisible(false);
+    setDeleteModalVisible(false);
+    setSelectedMenu(null);
   };
 
   // Handle adding a new menu item
   const handleAddMenuItem = async () => {
-    setIsSubmitting(true);
     try {
-      const formDataToSubmit = { ...formData, restaurantId };
-      await dispatch(addMenuItem(formDataToSubmit)).unwrap();
-      handleCancel();
+      await dispatch(addMenuItem(formData)).unwrap();
+      resetForm();
     } catch (error) {
-      console.error('Failed to add menu item:', error);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Add menu item failed:', error);
     }
   };
 
   // Handle editing a menu item
   const handleEditMenuItem = async () => {
-    setIsSubmitting(true);
+    if (!selectedMenu) return;
     try {
-      const formDataToSubmit = { ...formData, restaurantId, stock: JSON.stringify(formData.stock) };
-      await dispatch(updateMenuItemStatus({ id: selectedMenu.id, formData: formDataToSubmit })).unwrap();
-      setEditModalVisible(false);
-      handleCancel();
+      await dispatch(updateMenuItem({
+        id: selectedMenu.id,
+        formData
+      })).unwrap();
+      resetForm();
     } catch (error) {
-      console.error('Failed to update menu item:', error);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Update menu item failed:', error);
     }
   };
 
   // Handle deleting a menu item
-  const handledeleteMenuItem = async () => {
-    setIsSubmitting(true);
+  const handleDeleteMenuItem = async () => {
+    if (!selectedMenu) return;
     try {
-      await dispatch(deleteMenuItem({ id: selectedMenu.id, restaurantId })).unwrap();
-      setDeleteModalVisible(false);
+      await dispatch(deleteMenuItem({ 
+        id: selectedMenu.id, 
+        restaurantId 
+      })).unwrap();
+      resetForm();
     } catch (error) {
-      console.error('Failed to delete menu item:', error);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Delete menu item failed:', error);
+    }
+  };
+
+  // Handle edit modal open
+  const handleEditClick = (menuItem) => {
+    setSelectedMenu(menuItem);
+    setFormData({
+      itemName: menuItem.itemName,
+      itemImage: null, // Reset image input
+      price: menuItem.price,
+      categoryId: menuItem.categoryId,
+      restaurantId,
+      stockItems: menuItem.stockItems || [{ stockId: '', quantity: '' }]
+    });
+    setEditModalVisible(true);
+  };
+
+
+  const handleStatusChange = async (itemId, newStatus) => {
+    try {
+      await dispatch(updateMenuItemStatus({ id: itemId, status: newStatus })).unwrap();
+      toast.success('Status updated successfully');
+    } catch (error) {
+      toast.error(error.message || 'Failed to update status');
     }
   };
 
   return (
-    <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '20px',
-        }}
-      >
+    <div style={{ padding: '0 20px' }}>
+      <div className="header-section">
         <h2>Menu</h2>
-        <CButton color="primary" onClick={() => setModalVisible(true)}>
-          Add Menu
+        <CButton 
+          color="primary" 
+          onClick={() => setModalVisible(true)}
+          disabled={addLoading}
+        >
+          {addLoading ? <CSpinner size="sm" /> : 'Add Menu'}
         </CButton>
       </div>
+
       <MenuItemList
         menuItems={menuItems}
-        menuItemsLoading={menuItemsLoading}
-        setSelectedMenu={setSelectedMenu}
-        setEditModalVisible={setEditModalVisible}
-        setDeleteModalVisible={setDeleteModalVisible}
+        loading={menuItemsLoading}
+        onEditClick={handleEditClick}
+        onStatusChange={handleStatusChange}
+        onDeleteClick={(item) => {
+          setSelectedMenu(item);
+          setDeleteModalVisible(true);
+        }}
       />
+
+      {/* Add Menu Modal */}
       <CommonModal
         visible={modalVisible}
-        onClose={handleCancel}
+        onClose={resetForm}
         title="Add Menu Item"
         onConfirm={handleAddMenuItem}
-        confirmButtonText={isSubmitting ? <CSpinner size="sm" /> : 'Add Menu Item'}
+        confirmButtonText={addLoading ? <CSpinner size="sm" /> : 'Add Menu Item'}
         confirmButtonColor="primary"
-        isLoading={isSubmitting}
+        isLoading={addLoading}
       >
         <MenuItemForm
           formData={formData}
@@ -172,14 +205,16 @@ const Menu = () => {
           previewImage={previewImage}
         />
       </CommonModal>
+
+      {/* Edit Menu Modal */}
       <CommonModal
         visible={editModalVisible}
-        onClose={handleCancel}
+        onClose={resetForm}
         title="Edit Menu Item"
         onConfirm={handleEditMenuItem}
-        confirmButtonText={isSubmitting ? <CSpinner size="sm" /> : 'Save Changes'}
+        confirmButtonText={updateLoading ? <CSpinner size="sm" /> : 'Save Changes'}
         confirmButtonColor="primary"
-        isLoading={isSubmitting}
+        isLoading={updateLoading}
       >
         <MenuItemForm
           formData={formData}
@@ -192,14 +227,16 @@ const Menu = () => {
           previewImage={previewImage}
         />
       </CommonModal>
+
+      {/* Delete Confirmation Modal */}
       <CommonModal
         visible={deleteModalVisible}
         onClose={() => setDeleteModalVisible(false)}
         title="Delete Menu Item"
-        onConfirm={handledeleteMenuItem}
-        confirmButtonText={isSubmitting ? <CSpinner size="sm" /> : 'Delete'}
+        onConfirm={handleDeleteMenuItem}
+        confirmButtonText={deleteLoading ? <CSpinner size="sm" /> : 'Delete'}
         confirmButtonColor="danger"
-        isLoading={isSubmitting}
+        isLoading={deleteLoading}
       >
         Are you sure you want to delete this menu item?
       </CommonModal>
