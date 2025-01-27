@@ -72,7 +72,7 @@ export const updateCategory = createAsyncThunk(
       if (categoryImage) formData.append('categoryImage', categoryImage);
       if (restaurantId) formData.append('restaurantId', restaurantId);
 
-      const response = await axios.put(
+      const response = await axios.post(
         `${BASE_URL}/category/${id}`,
         formData,
         configureHeaders(token)
@@ -167,7 +167,6 @@ const categorySlice = createSlice({
         if (index !== -1) {
           state.categories[index] = action.payload;
         }
-        toast.success('Category updated successfully!');
       })
       .addCase(updateCategory.rejected, (state, action) => {
         state.loading = false;

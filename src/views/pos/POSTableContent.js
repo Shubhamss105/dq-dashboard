@@ -1,193 +1,199 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { CContainer, CRow, CCol, CButton, CCardFooter } from '@coreui/react';
-import CIcon from '@coreui/icons-react';
-import { useParams } from 'react-router-dom';
-import { cilPlus, cilTrash, cilSearch } from '@coreui/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchMenuItems } from '../../redux/slices/menuSlice';
-import { fetchCustomers, addCustomer } from '../../redux/slices/customerSlice';
-import { createTransaction } from '../../redux/slices/transactionSlice';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import CustomerModal from '../../components/CustomerModal';
-import ProductList from '../../components/ProductList';
-import Cart from '../../components/Cart';
-import Invoice from '../../components/Invoice';
-import TaxModal from '../../components/TaxModal';
-import DiscountModal from '../../components/DiscountModal';
-import PaymentModal from '../../components/PaymentModal';
-import DeleteModal from '../../components/DeleteModal';
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { CContainer, CRow, CCol, CButton, CCardFooter } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { useParams } from 'react-router-dom'
+import { cilPlus, cilTrash, cilSearch } from '@coreui/icons'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchMenuItems } from '../../redux/slices/menuSlice'
+import { fetchCustomers, addCustomer } from '../../redux/slices/customerSlice'
+import { createTransaction } from '../../redux/slices/transactionSlice'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
+import CustomerModal from '../../components/CustomerModal'
+import ProductList from '../../components/ProductList'
+import Cart from '../../components/Cart'
+import Invoice from '../../components/Invoice'
+import KOT from '../../components/KOT'
+import TaxModal from '../../components/TaxModal'
+import DiscountModal from '../../components/DiscountModal'
+import PaymentModal from '../../components/PaymentModal'
+import DeleteModal from '../../components/DeleteModal'
 
 const POSTableContent = () => {
-  const dispatch = useDispatch();
-  const { tableNumber } = useParams();
-  const { customers, loading: customerLoading } = useSelector((state) => state.customers);
-  const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems);
-  const restaurantId = useSelector((state) => state.auth.restaurantId);
+  const dispatch = useDispatch()
+  const invoiceRef = useRef(null)
+  const kotRef = useRef(null)
+  const { tableNumber } = useParams()
+  const { customers, loading: customerLoading } = useSelector((state) => state.customers)
+  const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems)
+  const restaurantId = useSelector((state) => state.auth.restaurantId)
 
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [tax, setTax] = useState(0);
-  const [discount, setDiscount] = useState(0);
-  const [showTaxModal, setShowTaxModal] = useState(false);
-  const [showDiscountModal, setShowDiscountModal] = useState(false);
-  const [showCustomerModal, setShowCustomerModal] = useState(false);
-  const [inputValue, setInputValue] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCustomerName, setSelectedCustomerName] = useState('');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentType, setPaymentType] = useState('');
-  const [splitPercentages, setSplitPercentages] = useState({ online: 0, cash: 0, due: 0 });
-  const [searchProduct, setSearchProduct] = useState('');
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [tax, setTax] = useState(0)
+  const [discount, setDiscount] = useState(0)
+  const [showTaxModal, setShowTaxModal] = useState(false)
+  const [showDiscountModal, setShowDiscountModal] = useState(false)
+  const [showCustomerModal, setShowCustomerModal] = useState(false)
+  const [inputValue, setInputValue] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCustomerName, setSelectedCustomerName] = useState('')
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentType, setPaymentType] = useState('')
+  const [splitPercentages, setSplitPercentages] = useState({ online: 0, cash: 0, due: 0 })
+  const [searchProduct, setSearchProduct] = useState('')
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState(null)
   const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem(`cart_${tableNumber}`);
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+    const savedCart = localStorage.getItem(`cart_${tableNumber}`)
+    return savedCart ? JSON.parse(savedCart) : []
+  })
   const [startTime, setStartTime] = useState(() => {
-    const savedStartTime = localStorage.getItem(`start_time_${tableNumber}`);
-    return savedStartTime ? new Date(savedStartTime) : null;
-  });
+    const savedStartTime = localStorage.getItem(`start_time_${tableNumber}`)
+    return savedStartTime ? new Date(savedStartTime) : null
+  })
 
   useEffect(() => {
     if (startTime) {
       const interval = setInterval(() => {
-        const now = new Date();
-        setElapsedTime(Math.floor((now - startTime) / 1000));
-      }, 1000);
+        const now = new Date()
+        setElapsedTime(Math.floor((now - startTime) / 1000))
+      }, 1000)
 
-      return () => clearInterval(interval);
+      return () => clearInterval(interval)
     }
-  }, [startTime]);
+  }, [startTime])
 
   useEffect(() => {
     if (restaurantId) {
-      dispatch(fetchMenuItems({ restaurantId }));
-      dispatch(fetchCustomers({ restaurantId }));
+      dispatch(fetchMenuItems({ restaurantId }))
+      dispatch(fetchCustomers({ restaurantId }))
     }
-  }, [dispatch, restaurantId]);
+  }, [dispatch, restaurantId])
 
   useEffect(() => {
-    localStorage.setItem(`cart_${tableNumber}`, JSON.stringify(cart));
-  }, [cart]);
+    localStorage.setItem(`cart_${tableNumber}`, JSON.stringify(cart))
+  }, [cart])
 
   const handleDeleteClick = (item) => {
-    setItemToDelete(item);
-    setShowDeleteModal(true);
-  };
+    setItemToDelete(item)
+    setShowDeleteModal(true)
+  }
 
   const confirmDelete = () => {
     if (itemToDelete) {
-      removeFromCart(itemToDelete.id);
-      setShowDeleteModal(false);
-      setItemToDelete(null);
+      removeFromCart(itemToDelete.id)
+      setShowDeleteModal(false)
+      setItemToDelete(null)
     }
-  };
+  }
 
   const cancelDelete = () => {
-    setShowDeleteModal(false);
-    setItemToDelete(null);
-  };
+    setShowDeleteModal(false)
+    setItemToDelete(null)
+  }
 
   const filteredCustomers = customers?.filter((customer) =>
-    customer.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    customer.name?.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   const filteredMenuItems = menuItems?.filter((product) =>
-    product.itemName?.toLowerCase().includes(searchProduct.toLowerCase())
-  );
+    product.itemName?.toLowerCase().includes(searchProduct.toLowerCase()),
+  )
 
   const handleCustomerSelect = (customer) => {
-    setSelectedCustomerName(customer.name);
-    setShowCustomerModal(false);
-  };
+    setSelectedCustomerName(customer.name)
+    setShowCustomerModal(false)
+  }
 
   const handleSearchProduct = (e) => {
-    setSearchProduct(e.target.value);
-  };
+    setSearchProduct(e.target.value)
+  }
 
   const addToCart = (product) => {
-    const existingItem = cart.find((item) => item.id === product.id);
+    const existingItem = cart.find((item) => item.id === product.id)
     if (existingItem) {
-      setCart(cart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)));
+      setCart(
+        cart.map((item) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
+        ),
+      )
     } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
+      setCart([...cart, { ...product, quantity: 1 }])
     }
     if (!startTime) {
-      const now = new Date();
-      setStartTime(now);
-      localStorage.setItem(`start_time_${tableNumber}`, now.toISOString());
+      const now = new Date()
+      setStartTime(now)
+      localStorage.setItem(`start_time_${tableNumber}`, now.toISOString())
     }
-  };
+  }
 
   const removeFromCart = (productId) => {
-    const updatedCart = cart.filter((item) => item.id !== productId);
-    setCart(updatedCart);
+    const updatedCart = cart.filter((item) => item.id !== productId)
+    setCart(updatedCart)
 
     if (updatedCart.length === 0) {
-      setStartTime(null);
-      setElapsedTime(0);
-      localStorage.removeItem(`start_time_${tableNumber}`);
+      setStartTime(null)
+      setElapsedTime(0)
+      localStorage.removeItem(`start_time_${tableNumber}`)
     }
-  };
+  }
 
   const clearCart = () => {
-    setCart([]);
-    setStartTime(null);
-    setElapsedTime(0);
-    localStorage.removeItem(`cart_${tableNumber}`);
-    localStorage.removeItem(`start_time_${tableNumber}`);
-  };
+    setCart([])
+    setStartTime(null)
+    setElapsedTime(0)
+    localStorage.removeItem(`cart_${tableNumber}`)
+    localStorage.removeItem(`start_time_${tableNumber}`)
+  }
 
   const handleTaxSubmit = () => {
-    setTax(Number(inputValue));
-    setShowTaxModal(false);
-    setInputValue('');
-  };
+    setTax(Number(inputValue))
+    setShowTaxModal(false)
+    setInputValue('')
+  }
 
   const handleDiscountSubmit = () => {
-    setDiscount(Number(inputValue));
-    setShowDiscountModal(false);
-    setInputValue('');
-  };
+    setDiscount(Number(inputValue))
+    setShowDiscountModal(false)
+    setInputValue('')
+  }
 
   const calculateSubtotal = useCallback(() => {
-    return cart.reduce((total, item) => total + item.quantity * item.price, 0);
-  }, [cart]);
+    return cart.reduce((total, item) => total + item.quantity * item.price, 0)
+  }, [cart])
 
   const calculateTaxAmount = () => {
-    const subtotal = calculateSubtotal();
-    return (subtotal * tax) / 100;
-  };
+    const subtotal = calculateSubtotal()
+    return (subtotal * tax) / 100
+  }
 
   const calculateDiscountAmount = () => {
-    const subtotal = calculateSubtotal();
-    return (subtotal * discount) / 100;
-  };
+    const subtotal = calculateSubtotal()
+    return (subtotal * discount) / 100
+  }
 
   const calculateTotal = useCallback(() => {
-    const subtotal = calculateSubtotal();
-    const taxAmount = (subtotal * tax) / 100;
-    const discountAmount = (subtotal * discount) / 100;
-    return subtotal + taxAmount - discountAmount;
-  }, [calculateSubtotal, tax, discount]);
+    const subtotal = calculateSubtotal()
+    const taxAmount = (subtotal * tax) / 100
+    const discountAmount = (subtotal * discount) / 100
+    return subtotal + taxAmount - discountAmount
+  }, [calculateSubtotal, tax, discount])
 
   // Handle adding customer
   const handleAddCustomer = () => {
-    const customerData = { ...formValues, restaurantId };
+    const customerData = { ...formValues, restaurantId }
 
     dispatch(addCustomer(customerData))
       .unwrap()
       .then((newCustomer) => {
         // Set the newly added customer's name
-        setSelectedCustomerName(newCustomer.name);
-        setShowCustomerModal(false);
+        setSelectedCustomerName(newCustomer.name)
+        setShowCustomerModal(false)
       })
       .catch((error) => {
-        console.error('Failed to add customer:', error);
-      });
-  };
-
+        console.error('Failed to add customer:', error)
+      })
+  }
 
   const handlePaymentSubmit = async () => {
     const payload = {
@@ -205,43 +211,170 @@ const POSTableContent = () => {
       type: paymentType,
       restaurantId: restaurantId,
       tableNumber: tableNumber,
-    };
+    }
 
     if (paymentType === 'split') {
-      payload.split_details = { ...splitPercentages };
+      payload.split_details = { ...splitPercentages }
     }
 
     dispatch(createTransaction(payload))
       .unwrap()
       .then(() => {
-        setShowPaymentModal(false);
-        clearCart();
+        setShowPaymentModal(false)
+        clearCart()
       })
       .catch((error) => {
-        console.error('Error submitting payment:', error);
-      });
-  };
-
+        console.error('Error submitting payment:', error)
+      })
+  }
 
   const generateInvoice = () => {
-    const invoiceElement = document.getElementById('invoice-section');
+    const invoiceElement = invoiceRef.current;
+
+    if (!invoiceElement) return;
+
+    // Show the invoice section temporarily
     invoiceElement.style.display = 'block';
 
-    html2canvas(invoiceElement, { scale: 2 })
-      .then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        const pdfBlob = pdf.output('bloburl');
-        window.open(pdfBlob, '_blank');
-        pdf.save(`Invoice_${new Date().toISOString()}.pdf`);
-      })
-      .finally(() => {
-        invoiceElement.style.display = 'none';
-      });
-  };
+    html2canvas(invoiceElement, { scale: 2, useCORS: true }) // Optimize html2canvas
+        .then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+            // Generate a Blob URL for the PDF
+            const pdfBlob = pdf.output('bloburl');
+
+            // Create a new window to display the PDF
+            const previewWindow = window.open();
+            if (previewWindow) {
+                const htmlContent = `
+                    <html>
+                        <head>
+                            <title>Invoice Preview</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                                iframe { width: 100%; height: 90vh; border: none; }
+                                .actions {
+                                    margin-top: 10px;
+                                    text-align: center;
+                                }
+                                button {
+                                    margin: 0 10px;
+                                    padding: 10px 20px;
+                                    font-size: 16px;
+                                    cursor: pointer;
+                                    background-color: #007bff;
+                                    color: white;
+                                    border: none;
+                                    border-radius: 5px;
+                                }
+                                button:hover {
+                                    background-color: #0056b3;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <iframe src="${pdfBlob}" width="100%" height="90%"></iframe>
+                            <div class="actions">
+                                <button onclick="window.print()">Print</button>
+                                <button onclick="sendEmail()">Send via Email</button>
+                            </div>
+                            <script>
+                                function sendEmail() {
+                                    alert('Send via Email functionality to be implemented.');
+                                }
+                            </script>
+                        </body>
+                    </html>
+                `;
+
+                // Write the HTML content to the new window
+                previewWindow.document.open();
+                previewWindow.document.write(htmlContent);
+                previewWindow.document.close();
+            }
+        })
+        .catch((error) => {
+            console.error('Error generating invoice:', error);
+        })
+        .finally(() => {
+            // Hide the invoice section after generating the PDF
+            invoiceElement.style.display = 'none';
+        });
+};
+
+  const generateKOT = () => {
+    const kotElement = kotRef.current;
+
+    if (!kotElement) return;
+
+    // Show the KOT section temporarily
+    kotElement.style.display = 'block';
+
+    html2canvas(kotElement, { scale: 2 })
+        .then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+            // Generate a Blob URL for the PDF
+            const pdfBlob = pdf.output('bloburl');
+
+            // Create a new window to display the KOT
+            const previewWindow = window.open();
+            if (previewWindow) {
+                const htmlContent = `
+                    <html>
+                        <head>
+                            <title>KOT Preview</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; }
+                                iframe { width: 100%; height: 90%; border: none; }
+                                .print-button {
+                                    display: block;
+                                    margin: 10px auto;
+                                    padding: 10px 20px;
+                                    font-size: 16px;
+                                    cursor: pointer;
+                                    background-color: #007bff;
+                                    color: white;
+                                    border: none;
+                                    border-radius: 5px;
+                                }
+                                .print-button:hover {
+                                    background-color: #0056b3;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <iframe src="${pdfBlob}" width="100%" height="90%"></iframe>
+                            <button class="print-button" onclick="printPDF()">Print KOT</button>
+                            <script>
+                                function printPDF() {
+                                    const iframe = document.querySelector('iframe');
+                                    iframe.contentWindow.print();
+                                }
+                            </script>
+                        </body>
+                    </html>
+                `;
+
+                // Write the HTML content to the new window
+                previewWindow.document.open();
+                previewWindow.document.write(htmlContent);
+                previewWindow.document.close();
+            }
+        })
+        .finally(() => {
+            // Hide the KOT section after generating the PDF
+            kotElement.style.display = 'none';
+        });
+};
 
   return (
     <CContainer fluid className="p-4 shadow-shadow-lg bg-white">
@@ -279,22 +412,19 @@ const POSTableContent = () => {
           <CCardFooter className="bg-warning text-white rounded-2 p-3 mt-3 shadow-sm">
             <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
               {/* Total Amount */}
-              <h4 className="mb-0 fs-5 fs-md-4 text-center text-md-start">Total: ₹{calculateTotal()}</h4>
+              <h4 className="mb-0 fs-5 fs-md-4 text-center text-md-start">
+                Total: ₹{calculateTotal()}
+              </h4>
 
               {/* Buttons */}
               <div className="d-flex flex-column flex-md-row gap-2">
-                <CButton
-                  color="danger"
-                  onClick={clearCart}
-                  className="text-white fw-bold"
-                >
+                <CButton color="danger" onClick={clearCart} className="text-white fw-bold">
                   Cancel
                 </CButton>
-                <CButton
-                  color="secondary"
-                  onClick={generateInvoice}
-                  className="text-white fw-bold"
-                >
+                <CButton color="primary" onClick={generateKOT} className="text-white fw-bold">
+                  Generate KOT
+                </CButton>
+                <CButton color="secondary" onClick={generateInvoice} className="text-white fw-bold">
                   Generate Bill
                 </CButton>
                 <CButton
@@ -310,6 +440,7 @@ const POSTableContent = () => {
         </CCol>
       </CRow>
       <Invoice
+        ref={invoiceRef}
         tableNumber={tableNumber}
         selectedCustomerName={selectedCustomerName}
         cart={cart}
@@ -319,6 +450,11 @@ const POSTableContent = () => {
         discount={discount}
         calculateDiscountAmount={calculateDiscountAmount}
         calculateTotal={calculateTotal}
+      />
+      <KOT
+        ref={kotRef}
+        tableNumber={tableNumber}
+        cart={cart}
       />
       <TaxModal
         showTaxModal={showTaxModal}
@@ -359,7 +495,7 @@ const POSTableContent = () => {
         handleAddCustomer={handleAddCustomer}
       />
     </CContainer>
-  );
-};
+  )
+}
 
-export default POSTableContent;
+export default POSTableContent
