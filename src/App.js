@@ -8,6 +8,7 @@ import './scss/style.scss'
 import './scss/examples.scss'
 import PrivateRoute from './components/PrivateRoute'
 import './global.css'
+import Reservation from './views/reservations/Reservation'
 
 // Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -72,6 +73,7 @@ const App = () => {
               }
             >
               {/* Nested Authenticated Routes */}
+              <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="orders" element={<Orders />} />
               <Route path="supplier" element={<Supplier />} />
@@ -87,6 +89,7 @@ const App = () => {
               <Route path="daily-report" element={<DailyReport />} />
               <Route path="payment-report" element={<PaymentReport />} />
               <Route path="feedback" element={<Feedback />} />
+              <Route path="reservations" element={<Reservation/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>

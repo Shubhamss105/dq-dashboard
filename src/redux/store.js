@@ -15,6 +15,7 @@ import reportReducer from './slices/reportSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import feedbackReducer from './slices/feedbackSlice';
 import sidebarReducer from './slices/sidebarSlice';
+import reservationReducer from './slices/reservationSlice';
 
 // Configure the Redux store
 const store = configureStore({
@@ -34,6 +35,7 @@ const store = configureStore({
     dashboard: dashboardReducer,
     feedbacks: feedbackReducer,
     sidebar: sidebarReducer,
+    reservations: reservationReducer,
   },
 });
 
