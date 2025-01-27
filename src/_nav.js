@@ -71,6 +71,12 @@ const _nav = [
   },
   {
     component: CNavItem,
+    name: 'Reservations',
+    to: '/reservations',
+    icon: <CIcon icon={cilQrCode} customClassName="nav-icon"/>,
+  },
+  {
+    component: CNavItem,
     name: 'Feedbacks',
     to: '/feedback',
     icon: <CIcon icon={cibMessenger} customClassName="nav-icon"/>,

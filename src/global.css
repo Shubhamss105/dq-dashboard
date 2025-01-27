@@ -20,4 +20,10 @@
     display: none;
     opacity: 0;
   }
+
+  .basic-single .select__menu {
+    max-height: 200px; /* Adjust the height as needed */
+    overflow-y: auto;
+}
+
   
