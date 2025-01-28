@@ -14,6 +14,7 @@ import ProductList from '../../components/ProductList'
 import Cart from '../../components/Cart'
 import Invoice from '../../components/Invoice'
 import KOT from '../../components/KOT'
+import KOTModal from '../../components/KOTModal'
 import TaxModal from '../../components/TaxModal'
 import DiscountModal from '../../components/DiscountModal'
 import PaymentModal from '../../components/PaymentModal'
@@ -27,6 +28,10 @@ const POSTableContent = () => {
   const { customers, loading: customerLoading } = useSelector((state) => state.customers)
   const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
+
+  const [showKOTModal, setShowKOTModal] = useState(false)
+  const [kotImage, setKOTImage] = useState('')
+  const [billContent, setBillContent] = useState('')
 
   const [elapsedTime, setElapsedTime] = useState(0)
   const [tax, setTax] = useState(0)
@@ -229,28 +234,28 @@ const POSTableContent = () => {
   }
 
   const generateInvoice = () => {
-    const invoiceElement = invoiceRef.current;
+    const invoiceElement = invoiceRef.current
 
-    if (!invoiceElement) return;
+    if (!invoiceElement) return
 
     // Show the invoice section temporarily
-    invoiceElement.style.display = 'block';
+    invoiceElement.style.display = 'block'
 
     html2canvas(invoiceElement, { scale: 2, useCORS: true }) // Optimize html2canvas
-        .then((canvas) => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      .then((canvas) => {
+        const imgData = canvas.toDataURL('image/png')
+        const pdf = new jsPDF('p', 'mm', 'a4')
+        const pdfWidth = pdf.internal.pageSize.getWidth()
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
 
-            // Generate a Blob URL for the PDF
-            const pdfBlob = pdf.output('bloburl');
+        // Generate a Blob URL for the PDF
+        const pdfBlob = pdf.output('bloburl')
 
-            // Create a new window to display the PDF
-            const previewWindow = window.open();
-            if (previewWindow) {
-                const htmlContent = `
+        // Create a new window to display the PDF
+        const previewWindow = window.open()
+        if (previewWindow) {
+          const htmlContent = `
                     <html>
                         <head>
                             <title>Invoice Preview</title>
@@ -289,92 +294,66 @@ const POSTableContent = () => {
                             </script>
                         </body>
                     </html>
-                `;
+                `
 
-                // Write the HTML content to the new window
-                previewWindow.document.open();
-                previewWindow.document.write(htmlContent);
-                previewWindow.document.close();
-            }
-        })
-        .catch((error) => {
-            console.error('Error generating invoice:', error);
-        })
-        .finally(() => {
-            // Hide the invoice section after generating the PDF
-            invoiceElement.style.display = 'none';
-        });
-};
+          // Write the HTML content to the new window
+          previewWindow.document.open()
+          previewWindow.document.write(htmlContent)
+          previewWindow.document.close()
+        }
+      })
+      .catch((error) => {
+        console.error('Error generating invoice:', error)
+      })
+      .finally(() => {
+        // Hide the invoice section after generating the PDF
+        invoiceElement.style.display = 'none'
+      })
+  }
 
   const generateKOT = () => {
-    const kotElement = kotRef.current;
+    const kotElement = kotRef.current
 
-    if (!kotElement) return;
+    if (!kotElement) return
 
-    // Show the KOT section temporarily
-    kotElement.style.display = 'block';
+    kotElement.style.display = 'block'
 
     html2canvas(kotElement, { scale: 2 })
-        .then((canvas) => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      .then((canvas) => {
+        const imgData = canvas.toDataURL('image/png')
+        setKOTImage(imgData)
+        setShowKOTModal(true)
+      })
+      .catch((error) => {
+        console.error('Error generating KOT:', error)
+      })
+      .finally(() => {
+        kotElement.style.display = 'none'
+      })
+  }
 
-            // Generate a Blob URL for the PDF
-            const pdfBlob = pdf.output('bloburl');
-
-            // Create a new window to display the KOT
-            const previewWindow = window.open();
-            if (previewWindow) {
-                const htmlContent = `
-                    <html>
-                        <head>
-                            <title>KOT Preview</title>
-                            <style>
-                                body { font-family: Arial, sans-serif; }
-                                iframe { width: 100%; height: 90%; border: none; }
-                                .print-button {
-                                    display: block;
-                                    margin: 10px auto;
-                                    padding: 10px 20px;
-                                    font-size: 16px;
-                                    cursor: pointer;
-                                    background-color: #007bff;
-                                    color: white;
-                                    border: none;
-                                    border-radius: 5px;
-                                }
-                                .print-button:hover {
-                                    background-color: #0056b3;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <iframe src="${pdfBlob}" width="100%" height="90%"></iframe>
-                            <button class="print-button" onclick="printPDF()">Print KOT</button>
-                            <script>
-                                function printPDF() {
-                                    const iframe = document.querySelector('iframe');
-                                    iframe.contentWindow.print();
-                                }
-                            </script>
-                        </body>
-                    </html>
-                `;
-
-                // Write the HTML content to the new window
-                previewWindow.document.open();
-                previewWindow.document.write(htmlContent);
-                previewWindow.document.close();
-            }
-        })
-        .finally(() => {
-            // Hide the KOT section after generating the PDF
-            kotElement.style.display = 'none';
-        });
-};
+  const handlePrint = () => {
+    const printWindow = window.open()
+    if (printWindow) {
+      printWindow.document.write(`
+      <html>
+        <head>
+          <title>KOT</title>
+        </head>
+        <body style="margin: 0; padding: 0;">
+          <img src="${kotImage}" style="width: 100%;" />
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `)
+      printWindow.document.close()
+    }
+  }
 
   return (
     <CContainer fluid className="p-4 shadow-shadow-lg bg-white">
@@ -436,6 +415,33 @@ const POSTableContent = () => {
                 </CButton>
               </div>
             </div>
+
+            <KOTModal isVisible={showKOTModal} onClose={() => setShowKOTModal(false)}>
+              <div style={{ textAlign: 'center' }}>
+                <h3>KOT Preview</h3>
+                {kotImage && (
+                  <img
+                    src={kotImage}
+                    alt="KOT Preview"
+                    style={{ width: '100%', marginBottom: '10px' }}
+                  />
+                )}
+                <button
+                  onClick={handlePrint}
+                  style={{
+                    margin: '0 10px',
+                    padding: '10px 20px',
+                    backgroundColor: '#28a745',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Print
+                </button>
+              </div>
+            </KOTModal>
           </CCardFooter>
         </CCol>
       </CRow>
@@ -451,11 +457,10 @@ const POSTableContent = () => {
         calculateDiscountAmount={calculateDiscountAmount}
         calculateTotal={calculateTotal}
       />
-      <KOT
-        ref={kotRef}
-        tableNumber={tableNumber}
-        cart={cart}
-      />
+
+<div style={{ position: "absolute", left: "-9999px" }}>
+      <KOT ref={kotRef} tableNumber={tableNumber} cart={cart} />
+      </div>
       <TaxModal
         showTaxModal={showTaxModal}
         setShowTaxModal={setShowTaxModal}
