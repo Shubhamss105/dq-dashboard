@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { CContainer, CRow, CCol, CButton, CCardFooter } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { useParams } from 'react-router-dom'
+import { toast } from 'react-toastify';
 import { cilPlus, cilTrash, cilSearch } from '@coreui/icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchMenuItems } from '../../redux/slices/menuSlice'
@@ -251,7 +252,7 @@ const [invoiceImage, setInvoiceImage] = useState("");
         setShowInvoiceModal(true); // Open the modal
       })
       .catch((error) => {
-        console.error("Error generating invoice:", error);
+        toast.error(`Error generating invoice: ${error}`, { autoClose: 3000 });
       })
       .finally(() => {
         // Hide the invoice section after generating the image
@@ -300,7 +301,7 @@ const [invoiceImage, setInvoiceImage] = useState("");
         setShowKOTModal(true)
       })
       .catch((error) => {
-        console.error('Error generating KOT:', error)
+        toast.error(`Error generating KOT: ${error}`, { autoClose: 3000 });
       })
       .finally(() => {
         kotElement.style.display = 'none'

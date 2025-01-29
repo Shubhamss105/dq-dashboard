@@ -46,6 +46,19 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch restaurant details
+export const fetchRestaurantDetails = createAsyncThunk(
+  'auth/fetchRestaurantDetails',
+  async ({ restaurantId, token }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/rest-profile/${restaurantId}`, configureHeaders(token));
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch restaurant details');
+    }
+  }
+);
+
 // Initial state
 const initialState = {
   user: localStorage.getItem('userId') || null,
@@ -136,7 +149,22 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         toast.error(`Logout failed: ${action.payload}`, { autoClose: 3000 });
-      });
+      })
+
+            // Fetch a restaurant by ID
+            .addCase(fetchRestaurantDetails.pending, (state) => {
+              state.loading = true;
+              state.error = null;
+            })
+            .addCase(fetchRestaurantDetails.fulfilled, (state, action) => {
+              state.loading = false;
+              state.auth = action.payload;
+            })
+            .addCase(fetchRestaurantDetails.rejected, (state, action) => {
+              state.loading = false;
+              state.error = action.payload;
+              toast.error(action.payload);
+            })
   },
 });
 
