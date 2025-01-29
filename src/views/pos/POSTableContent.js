@@ -33,6 +33,7 @@ const POSTableContent = () => {
 
   const [showKOTModal, setShowKOTModal] = useState(false)
   const [kotImage, setKOTImage] = useState('')
+  const [kotItems, setKotItems] = useState([]);
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 const [invoiceImage, setInvoiceImage] = useState("");
@@ -288,25 +289,35 @@ const [invoiceImage, setInvoiceImage] = useState("");
   };
 
   const generateKOT = () => {
-    const kotElement = kotRef.current
-
-    if (!kotElement) return
-
-    kotElement.style.display = 'block'
-
+    // Find new items that are not in the generated KOT
+    const newItems = cart.filter(item => !kotItems.some(kot => kot.id === item.id));
+  
+    if (newItems.length === 0) {
+      toast.info("No new items to generate KOT!", { autoClose: 3000 });
+      return;
+    }
+  
+    setKotItems(prevKotItems => [...prevKotItems, ...newItems]); // Update generated KOT items
+  
+    const kotElement = kotRef.current;
+    if (!kotElement) return;
+  
+    kotElement.style.display = "block";
+  
     html2canvas(kotElement, { scale: 2 })
       .then((canvas) => {
-        const imgData = canvas.toDataURL('image/png')
-        setKOTImage(imgData)
-        setShowKOTModal(true)
+        const imgData = canvas.toDataURL("image/png");
+        setKOTImage(imgData);
+        setShowKOTModal(true);
       })
       .catch((error) => {
         toast.error(`Error generating KOT: ${error}`, { autoClose: 3000 });
       })
       .finally(() => {
-        kotElement.style.display = 'none'
-      })
-  }
+        kotElement.style.display = "none";
+      });
+  };
+  
 
   const handlePrint = () => {
     const printWindow = window.open()
@@ -456,7 +467,7 @@ const [invoiceImage, setInvoiceImage] = useState("");
       </div>
 
 <div style={{ position: "absolute", left: "-9999px" }}>
-      <KOT ref={kotRef} tableNumber={tableNumber} cart={cart} />
+      <KOT ref={kotRef} tableNumber={tableNumber} cart={cart.filter(item => !kotItems.includes(item))} />
       </div>
       <TaxModal
         showTaxModal={showTaxModal}

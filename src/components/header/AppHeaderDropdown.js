@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   CAvatar,
   CDropdown,
@@ -11,13 +11,30 @@ import {
 import { cilLockLocked, cilSettings, cilUser } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector,shallowEqual } from 'react-redux'
 import { localLogout } from '../../redux/slices/authSlice'; 
+import { fetchRestaurantDetails } from '../../redux/slices/authSlice';
 
 import avatar8 from './../../assets/images/avatars/8.jpg';
 
 const AppHeaderDropdown = () => {
   const dispatch = useDispatch();
+
+    const { restaurantId, token, auth } = useSelector(
+      (state) => ({
+        restaurantId: state.auth.restaurantId,
+        token: state.auth.token,
+        auth: state.auth.auth,
+      }),
+      shallowEqual
+    );
+
+
+      useEffect(() => {
+        if (restaurantId && token) {
+          dispatch(fetchRestaurantDetails({ restaurantId, token }));
+        }
+      }, [dispatch]);
 
   const handleLogout = () => {
     dispatch(localLogout()); 
@@ -26,7 +43,7 @@ const AppHeaderDropdown = () => {
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-        <CAvatar src={avatar8} size="md" />
+        <CAvatar src={auth?.image ? String(auth.image) : avatar8} size="md" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
@@ -51,4 +68,4 @@ const AppHeaderDropdown = () => {
   );
 };
 
-export default AppHeaderDropdown;
+export default React.memo(AppHeaderDropdown);

@@ -66,6 +66,33 @@ export const updateOrderStatus = createAsyncThunk(
   }
 );
 
+export const updateOrder = createAsyncThunk(
+  'orders/updateOrder',
+  async ({ id, tableNumber, restaurantId, user_id, orderDetails }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const response = await axios.put(
+        `${BASE_URL}/orders/${id}`,
+        {
+          tableNumber,
+          restaurantId,
+          user_id,
+          orderDetails,
+        },
+        { headers }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error in API:', error.response?.data);
+      return rejectWithValue(error.response?.data?.error || 'Failed to update order');
+    }
+  }
+);
+
 
 // Fetch orders with notification status 0 for a restaurant
 export const fetchNotificationOrders = createAsyncThunk(
@@ -201,6 +228,37 @@ builder
     state.loading = false;
     state.error = action.payload;
     toast.error('Failed to change order status.');
+  });
+
+// Update order
+builder
+  .addCase(updateOrder.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(updateOrder.fulfilled, (state, action) => {
+    state.loading = false;
+    const updatedOrder = action.payload;
+
+    // Find the index of the updated order in the state.orders array
+    const index = state.orders.findIndex((order) => order.order_id === updatedOrder.order_id);
+
+    if (index !== -1) {
+      // Replace the existing order with the updated order
+      state.orders[index] = {
+        ...state.orders[index], // Keep existing properties
+        ...updatedOrder, // Override with updated properties
+      };
+    } else {
+      console.log('Order not found in the state.');
+    }
+
+    toast.success('Order updated successfully!');
+  })
+  .addCase(updateOrder.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+    toast.error('Failed to update order.');
   });
 
 
