@@ -1,6 +1,6 @@
 import React from "react";
 
-const KOTModal = ({ isVisible, onClose, children }) => {
+const InvoiceModal = ({ isVisible, onClose, children }) => {
   if (!isVisible) return null;
 
   return (
@@ -22,7 +22,7 @@ const KOTModal = ({ isVisible, onClose, children }) => {
         style={{
           background: "#fff",
           borderRadius: "8px",
-          padding: "10px",
+          padding: "20px",
           width: "90%",
           maxWidth: "400px",
           boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
@@ -50,4 +50,4 @@ const KOTModal = ({ isVisible, onClose, children }) => {
   );
 };
 
-export default KOTModal;
+export default InvoiceModal;

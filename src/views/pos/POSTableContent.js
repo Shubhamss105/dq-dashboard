@@ -15,6 +15,7 @@ import Cart from '../../components/Cart'
 import Invoice from '../../components/Invoice'
 import KOT from '../../components/KOT'
 import KOTModal from '../../components/KOTModal'
+import InvoiceModal from '../../components/InvoiceModal'
 import TaxModal from '../../components/TaxModal'
 import DiscountModal from '../../components/DiscountModal'
 import PaymentModal from '../../components/PaymentModal'
@@ -31,7 +32,9 @@ const POSTableContent = () => {
 
   const [showKOTModal, setShowKOTModal] = useState(false)
   const [kotImage, setKOTImage] = useState('')
-  const [billContent, setBillContent] = useState('')
+
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+const [invoiceImage, setInvoiceImage] = useState("");
 
   const [elapsedTime, setElapsedTime] = useState(0)
   const [tax, setTax] = useState(0)
@@ -234,82 +237,54 @@ const POSTableContent = () => {
   }
 
   const generateInvoice = () => {
-    const invoiceElement = invoiceRef.current
-
-    if (!invoiceElement) return
-
+    const invoiceElement = invoiceRef.current;
+  
+    if (!invoiceElement) return;
+  
     // Show the invoice section temporarily
-    invoiceElement.style.display = 'block'
-
-    html2canvas(invoiceElement, { scale: 2, useCORS: true }) // Optimize html2canvas
+    invoiceElement.style.display = "block";
+  
+    html2canvas(invoiceElement, { scale: 2, useCORS: true })
       .then((canvas) => {
-        const imgData = canvas.toDataURL('image/png')
-        const pdf = new jsPDF('p', 'mm', 'a4')
-        const pdfWidth = pdf.internal.pageSize.getWidth()
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-
-        // Generate a Blob URL for the PDF
-        const pdfBlob = pdf.output('bloburl')
-
-        // Create a new window to display the PDF
-        const previewWindow = window.open()
-        if (previewWindow) {
-          const htmlContent = `
-                    <html>
-                        <head>
-                            <title>Invoice Preview</title>
-                            <style>
-                                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-                                iframe { width: 100%; height: 90vh; border: none; }
-                                .actions {
-                                    margin-top: 10px;
-                                    text-align: center;
-                                }
-                                button {
-                                    margin: 0 10px;
-                                    padding: 10px 20px;
-                                    font-size: 16px;
-                                    cursor: pointer;
-                                    background-color: #007bff;
-                                    color: white;
-                                    border: none;
-                                    border-radius: 5px;
-                                }
-                                button:hover {
-                                    background-color: #0056b3;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <iframe src="${pdfBlob}" width="100%" height="90%"></iframe>
-                            <div class="actions">
-                                <button onclick="window.print()">Print</button>
-                                <button onclick="sendEmail()">Send via Email</button>
-                            </div>
-                            <script>
-                                function sendEmail() {
-                                    alert('Send via Email functionality to be implemented.');
-                                }
-                            </script>
-                        </body>
-                    </html>
-                `
-
-          // Write the HTML content to the new window
-          previewWindow.document.open()
-          previewWindow.document.write(htmlContent)
-          previewWindow.document.close()
-        }
+        const imgData = canvas.toDataURL("image/png");
+        setInvoiceImage(imgData); // Set the image data for the modal
+        setShowInvoiceModal(true); // Open the modal
       })
       .catch((error) => {
-        console.error('Error generating invoice:', error)
+        console.error("Error generating invoice:", error);
       })
       .finally(() => {
-        // Hide the invoice section after generating the PDF
-        invoiceElement.style.display = 'none'
-      })
-  }
+        // Hide the invoice section after generating the image
+        invoiceElement.style.display = "none";
+      });
+  };
+
+  const handleInvoicePrint = () => {
+    const printWindow = window.open();
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Invoice Preview</title>
+          </head>
+          <body style="margin: 0; padding: 0;">
+            <img src="${invoiceImage}" style="width: 100%;" />
+            <script>
+              window.onload = function() {
+                window.print();
+                window.close();
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
+  
+  const handleSendEmail = () => {
+    alert("Send via Email functionality to be implemented.");
+  };
 
   const generateKOT = () => {
     const kotElement = kotRef.current
@@ -442,9 +417,29 @@ const POSTableContent = () => {
                 </button>
               </div>
             </KOTModal>
+
+            {/* Invoice Modal */}
+      <InvoiceModal isVisible={showInvoiceModal} onClose={() => setShowInvoiceModal(false)}>
+        <div style={{ textAlign: "center" }}>
+          <h3>Invoice Preview</h3>
+          {invoiceImage && (
+            <img
+              src={invoiceImage}
+              alt="Invoice Preview"
+              style={{ width: "100%", marginBottom: "10px" }}
+            />
+          )}
+          <div style={{ marginTop: "10px" }}>
+            <button onClick={handleInvoicePrint}>Print</button>
+            <button onClick={handleSendEmail}>Send via Email</button>
+          </div>
+        </div>
+      </InvoiceModal>
           </CCardFooter>
         </CCol>
       </CRow>
+
+      <div style={{ position: "absolute", left: "-9999px" }}>
       <Invoice
         ref={invoiceRef}
         tableNumber={tableNumber}
@@ -457,6 +452,7 @@ const POSTableContent = () => {
         calculateDiscountAmount={calculateDiscountAmount}
         calculateTotal={calculateTotal}
       />
+      </div>
 
 <div style={{ position: "absolute", left: "-9999px" }}>
       <KOT ref={kotRef} tableNumber={tableNumber} cart={cart} />

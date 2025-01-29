@@ -25,7 +25,7 @@ const Invoice = React.forwardRef(({
         display: 'none',
         width: '200px',
         padding: '10px',
-        border: '1px solid #000',
+        // border: '1px solid #000',
         fontFamily: 'monospace',
         fontSize: '12px',
         lineHeight: '1.2',
