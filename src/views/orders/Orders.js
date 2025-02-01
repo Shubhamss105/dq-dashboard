@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { DataGrid } from '@mui/x-data-grid';
-import { fetchOrders, updateOrderStatus, updateOrder } from '../../redux/slices/orderSlice';
+import { fetchOrders, updateOrderStatus } from '../../redux/slices/orderSlice';
 import { CButton, CSpinner } from '@coreui/react';
 import CustomToolbar from '../../utils/CustomToolbar';
 import { format } from 'date-fns';
@@ -13,7 +13,6 @@ const Order = () => {
   const restaurantId = useSelector((state) => state.auth.restaurantId);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [updatedItems, setUpdatedItems] = useState({});
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
@@ -31,39 +30,7 @@ const Order = () => {
     }
   };
 
-  const handleUpdateOrder = async () => {
-    try {
-      const orderDetails = selectedOrder.order_details.map((item) => ({
-        item_id: item.item_id,
-        quantity: updatedItems[item.item_id] || item.quantity,
-        price: item.price,
-      }));
-
-      // await dispatch(updateOrder({
-      //   id: selectedOrder.order_id,
-      //   tableNumber: selectedOrder.table_number,
-      //   restaurantId: selectedOrder.restaurant_id,
-      //   user_id: selectedOrder.user.id,
-      //   orderDetails,
-      // }));
-
-      closeSidebar();
-    } catch (error) {
-      console.error('Error updating order:', error);
-    }
-  };
-
-  const closeSidebar = () => {
-    setSelectedOrder(null);
-    setUpdatedItems({});
-  };
-
-  const handleQuantityChange = (itemId, quantity) => {
-    setUpdatedItems((prev) => ({
-      ...prev,
-      [itemId]: quantity,
-    }));
-  };
+  const closeSidebar = () => setSelectedOrder(null);
 
   // Style based on status
   const getStatusStyle = (status) => ({
@@ -265,13 +232,7 @@ const Order = () => {
             <ul style={{ paddingLeft: '20px' }}>
               {selectedOrder.order_details?.map((item, index) => (
                 <li key={index}>
-                  {item.item_name} (x
-                  <input
-                    type="number"
-                    value={updatedItems[item.item_id] || item.quantity}
-                    onChange={(e) => handleQuantityChange(item.item_id, e.target.value)}
-                    style={{ width: '50px', marginLeft: '5px' }}
-                  />)
+                  {item.item_name} (x{item.quantity})
                 </li>
               ))}
             </ul>
@@ -296,21 +257,6 @@ const Order = () => {
               style={{ flex: '0 0 48%' }}
             >
               Reject Order
-            </CButton>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginTop: '20px',
-            }}
-          >
-            <CButton
-              color="primary"
-              onClick={handleUpdateOrder}
-              style={{ flex: '0 0 48%' }}
-            >
-              Update Order
             </CButton>
           </div>
         </div>

@@ -27,31 +27,33 @@ const ProductList = ({ searchProduct, handleSearchProduct, tableNumber, menuItem
           <p className="mt-2 fs-6">Loading products...</p>
         </div>
       ) : (
-        /* Product List */
-        filteredMenuItems?.map((product, index) => (
-          <div key={product.id}>
-            <CRow className="mb-3">
-              <CCol xs={8}>
-                {/* Product Name */}
-                <h6 className="mb-1 fw-bold fs-6 fs-md-5">{product.itemName}</h6>
-                {/* Product Price */}
-                <p className="text-muted mb-0 fs-7 fs-md-6">Price: ₹{product.price}</p>
-              </CCol>
-              <CCol xs={4} className="text-end">
-                {/* Add to Cart Button */}
-                <CButton
-                  color="success"
-                  className="text-white fw-semibold fs-6 fs-md-5"
-                  onClick={() => addToCart(product)}
-                >
-                  Add
-                </CButton>
-              </CCol>
-            </CRow>
-            {/* Divider between products */}
-            {index < filteredMenuItems.length - 1 && <hr />}
-          </div>
-        ))
+        /* Product List with Vertical Scrollbar */
+        <div style={{ maxHeight: '50vh', overflowY: 'auto', paddingRight: '10px' }} className="custom-scrollbar">
+          {filteredMenuItems?.map((product, index) => (
+            <div key={product.id}>
+              <CRow className="mb-3">
+                <CCol xs={8}>
+                  {/* Product Name */}
+                  <h6 className="mb-1 fw-bold fs-6 fs-md-5">{product.itemName}</h6>
+                  {/* Product Price */}
+                  <p className="text-muted mb-0 fs-7 fs-md-6">Price: ₹{product.price}</p>
+                </CCol>
+                <CCol xs={4} className="text-end">
+                  {/* Add to Cart Button */}
+                  <CButton
+                    color="success"
+                    className="text-white fw-semibold fs-6 fs-md-5"
+                    onClick={() => addToCart(product)}
+                  >
+                    Add
+                  </CButton>
+                </CCol>
+              </CRow>
+              {/* Divider between products */}
+              {index < filteredMenuItems.length - 1 && <hr />}
+            </div>
+          ))}
+        </div>
       )}
     </CContainer>
   );
