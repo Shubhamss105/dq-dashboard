@@ -143,7 +143,7 @@ const Order = () => {
                 ...order,
                 sno: index + 1,
               }))}
-            getRowId={(row) => row.order_id}
+              getRowId={(row) => row.id || row.data?.id || Math.random()}
             columns={columns}
             pageSize={10}
             rowsPerPageOptions={[10]}

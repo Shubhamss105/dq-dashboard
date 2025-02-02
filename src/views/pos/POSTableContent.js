@@ -190,7 +190,7 @@ const [invoiceImage, setInvoiceImage] = useState("");
   }, [calculateSubtotal, tax, discount])
 
   // Handle adding customer
-  const handleAddCustomer = () => {
+  const handleAddCustomer = (formValues) => {
     const customerData = { ...formValues, restaurantId }
 
     dispatch(addCustomer(customerData))
@@ -201,7 +201,7 @@ const [invoiceImage, setInvoiceImage] = useState("");
         setShowCustomerModal(false)
       })
       .catch((error) => {
-        console.error('Failed to add customer:', error)
+        toast.error('Failed to add customer: ' + error.message);
       })
   }
 

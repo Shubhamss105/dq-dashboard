@@ -141,6 +141,7 @@ const Customer = () => {
             sno: generateSerialNumber(),
           }))}
           columns={columns}
+          getRowId={(row) => row.id || row.data?.id || Math.random()}
           pageSize={10}
           rowsPerPageOptions={[10]}
           slots={{ Toolbar: CustomToolbar }}
