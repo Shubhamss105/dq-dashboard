@@ -9,6 +9,7 @@ import './scss/examples.scss'
 import PrivateRoute from './components/PrivateRoute'
 import './global.css'
 import Reservation from './views/reservations/Reservation'
+import Dues from './views/dues/Dues'
 
 // Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -90,6 +91,7 @@ const App = () => {
               <Route path="payment-report" element={<PaymentReport />} />
               <Route path="feedback" element={<Feedback />} />
               <Route path="reservations" element={<Reservation/>} />
+              <Route path="dues" element={<Dues/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>

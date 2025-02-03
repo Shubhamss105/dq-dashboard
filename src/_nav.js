@@ -16,7 +16,7 @@ import {
   cibDocusign,
   cilNewspaper,
   cibIndeed,
-  cibMessenger
+  cibMessenger,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem} from '@coreui/react'
 
@@ -74,6 +74,12 @@ const _nav = [
     name: 'Reservations',
     to: '/reservations',
     icon: <CIcon icon={cilQrCode} customClassName="nav-icon"/>,
+  },
+  {
+    component: CNavItem,
+    name: 'Dues',
+    to: '/dues',
+    icon: <CIcon icon={cilMoney} customClassName="nav-icon"/>,
   },
   {
     component: CNavItem,
