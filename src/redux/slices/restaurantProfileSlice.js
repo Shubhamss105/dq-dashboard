@@ -3,16 +3,19 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { BASE_URL } from '../../utils/constants';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("authToken");
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
+
 // GET API: Fetch restaurant profile
 export const getRestaurantProfile = createAsyncThunk(
   'restaurantProfile/getRestaurantProfile',
   async ({ restaurantId }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-      const response = await axios.get(`${BASE_URL}/rest-profile/${restaurantId}`, { headers });
+      const response = await axios.get(`${BASE_URL}/rest-profile/${restaurantId}`, { headers: getAuthHeaders() });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Something went wrong');

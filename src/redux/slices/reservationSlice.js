@@ -3,19 +3,23 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { BASE_URL } from "../../utils/constants";
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("authToken");
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
+
 // Fetch reservations by restaurant ID
 export const fetchReservations = createAsyncThunk(
   "reservations/fetchReservations",
   async ({ restaurantId }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("authToken");
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
+
 
       const response = await axios.get(
         `${BASE_URL}/reservations/AllByRestaurantId/${restaurantId}`,
-        { headers }
+        { headers: getAuthHeaders() }
       );
       return response.data;
     } catch (error) {
@@ -29,15 +33,11 @@ export const addReservation = createAsyncThunk(
   "reservations/addReservation",
   async ({ restaurantId, startTime, endTime, customerId, payment, advance, notes, tableNumber }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("authToken");
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
 
       const response = await axios.post(
         `${BASE_URL}/reservations`,
         { restaurantId, startTime, endTime, customerId, payment, advance, notes, tableNumber },
-        { headers }
+        { headers: getAuthHeaders() }
       );
       return response.data;
     } catch (error) {
@@ -51,15 +51,11 @@ export const updateReservation = createAsyncThunk(
   "reservations/updateReservation",
   async ({ id, restaurantId, startTime, endTime, customerId, payment, advance, notes, tableNumber }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("authToken");
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
 
       const response = await axios.put(
         `${BASE_URL}/reservations/${id}`,
         { restaurantId, startTime, endTime, customerId, payment, advance, notes, tableNumber },
-        { headers }
+        { headers: getAuthHeaders() }
       );
       return response.data.reservation;
     } catch (error) {
@@ -73,12 +69,8 @@ export const deleteReservation = createAsyncThunk(
   "reservations/deleteReservation",
   async ({ id }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("authToken");
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
 
-      const response = await axios.delete(`${BASE_URL}/reservations/${id}`, { headers });
+      const response = await axios.delete(`${BASE_URL}/reservations/${id}`, { headers: getAuthHeaders() });
       return { id, message: response.data.message };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Failed to delete reservation");

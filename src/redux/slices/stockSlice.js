@@ -3,19 +3,22 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { BASE_URL } from '../../utils/constants';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("authToken");
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
+
 // Fetch inventories
 export const fetchInventories = createAsyncThunk(
   'inventories/fetchInventories',
   async ({ restaurantId }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
 
       const response = await axios.get(
         `${BASE_URL}/inventories?restaurantId=${restaurantId}`,
-        { headers }
+        { headers: getAuthHeaders() }
       );
       return response.data;
     } catch (error) {
@@ -29,15 +32,11 @@ export const addInventory = createAsyncThunk(
   'inventories/addInventory',
   async ({ restaurantId, itemName, quantity, unit, supplierId }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
 
       const response = await axios.post(
         `${BASE_URL}/inventories`,
         { restaurantId, itemName, quantity, unit, supplierId },
-        { headers }
+        { headers: getAuthHeaders() }
       );
       return response.data;
     } catch (error) {
@@ -51,15 +50,11 @@ export const updateInventory = createAsyncThunk(
   'inventories/updateInventory',
   async ({ id, restaurantId, itemName, quantity, unit, price }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
 
       const response = await axios.put(
         `${BASE_URL}/inventories/${id}`,
         { restaurantId, itemName, quantity, unit, price },
-        { headers }
+        { headers: getAuthHeaders() }
       );
       return response.data;
     } catch (error) {
@@ -73,14 +68,10 @@ export const deleteInventory = createAsyncThunk(
   'inventories/deleteInventory',
   async ({ id }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken');
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
 
       const response = await axios.delete(
         `${BASE_URL}/inventories/${id}`,
-        { headers }
+        { headers: getAuthHeaders() }
       );
       return { id, message: response.data.message };
     } catch (error) {

@@ -3,19 +3,22 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { BASE_URL } from '../../utils/constants';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("authToken");
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
+
 // Fetch suppliers
 export const fetchSuppliers = createAsyncThunk(
     "suppliers/fetchSuppliers",
     async ({ restaurantId }, { rejectWithValue }) => {
       try {
-        const token = localStorage.getItem("authToken");
-        const headers = {
-          Authorization: `Bearer ${token}`,
-        };
   
         const response = await axios.get(
           `${BASE_URL}/suppliers?restaurantId=${restaurantId}`,
-          { headers }
+          { headers: getAuthHeaders() }
         );
         return response.data.data;
       } catch (error) {
@@ -30,15 +33,11 @@ export const addSupplier = createAsyncThunk(
     'suppliers/addSupplier',
     async ({ restaurantId, supplierName, email, phoneNumber, rawItem }, { rejectWithValue }) => {
       try {
-        const token = localStorage.getItem("authToken");
-        const headers = {
-          Authorization: `Bearer ${token}`,
-        };
   
         const response = await axios.post(
           `${BASE_URL}/suppliers`,
           { supplierName, email, phoneNumber, rawItem,restaurantId },
-          { headers }
+          { headers: getAuthHeaders() }
         );
         return response.data;
       } catch (error) {
@@ -53,15 +52,11 @@ export const updateSupplier = createAsyncThunk(
     'suppliers/updateSupplier',
     async ({ id, restaurantId, supplierName, email, phoneNumber, rawItem }, { rejectWithValue }) => {
       try {
-        const token = localStorage.getItem("authToken");
-        const headers = {
-          Authorization: `Bearer ${token}`,
-        };
   
         const response = await axios.put(
           `${BASE_URL}/suppliers/${id}`,
           { supplierName, email, phoneNumber, rawItem,restaurantId },
-          { headers } 
+          { headers: getAuthHeaders() } 
         );
         return response.data;
       } catch (error) {
@@ -76,14 +71,10 @@ export const deleteSupplier = createAsyncThunk(
     'suppliers/deleteSupplier',
     async ({ id, restaurantId }, { rejectWithValue }) => {
       try {
-        const token = localStorage.getItem("authToken");
-        const headers = {
-          Authorization: `Bearer ${token}`,
-        };
   
         const response = await axios.delete(
           `${BASE_URL}/suppliers/${id}`,
-          { headers }
+          { headers: getAuthHeaders() }
         );
         return { id, message: response.data.message };
       } catch (error) {

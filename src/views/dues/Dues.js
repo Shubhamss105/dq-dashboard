@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from "react-toastify";
 import {
     fetchDues,
     addDue,
     updateDue,
     deleteDue,
 } from '../../redux/slices/duesSlice';
-import { fetchTransactionDetails } from '../../redux/slices/transactionSlice';
+import { fetchTransactionsByRestaurant } from '../../redux/slices/transactionSlice';
 import CustomToolbar from '../../utils/CustomToolbar';
 import {
     CButton,
@@ -46,7 +47,7 @@ const Dues = () => {
     useEffect(() => {
         if (restaurantId) {
             dispatch(fetchDues({ restaurantId }));
-            dispatch(fetchTransactionDetails({ restaurantId }));
+            dispatch(fetchTransactionsByRestaurant({ restaurantId }));
         }
     }, [dispatch, restaurantId]);
 
@@ -55,27 +56,32 @@ const Dues = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSaveDue = () => {
+    const handleSaveDue = (e) => {
+        e.preventDefault(); // Prevent default form submission behavior
+    
         if (!formData.transaction_id || !formData.total) {
-            alert('Please fill out all required fields.');
+            toast.error("Please fill out all required fields.");
             return;
         }
-
+    
         const payload = {
             ...formData,
             restaurantId,
         };
-
-        dispatch(addDue(payload)).then(() => {
-            dispatch(fetchDues({ restaurantId }));
-            setFormData({
-                transaction_id: '',
-                total: '',
-                status: 'unpaid',
+    
+        dispatch(addDue(payload))
+            .unwrap()
+            .then(() => {
+                toast.success("Due added successfully");
+                setFormData({ transaction_id: '', total: '', status: 'unpaid' });
+                setModalVisible(false);
+            })
+            .catch((error) => {
+                toast.error("Error adding due:", error);
             });
-            setModalVisible(false);
-        });
     };
+    
+    
 
     const handleUpdateDue = () => {
         const payload = {
@@ -83,22 +89,31 @@ const Dues = () => {
             ...formData,
             restaurantId,
         };
-        dispatch(updateDue(payload)).then(() => {
-            dispatch(fetchDues({ restaurantId }));
-            setFormData({
-                transaction_id: '',
-                total: '',
-                status: 'unpaid',
+    
+        dispatch(updateDue(payload))
+            .unwrap()
+            .then(() => {
+                toast.success("Due updated successfully");
+                setEditModalVisible(false);
+            })
+            .catch((error) => {
+                toast.error("Error updating due:", error);
             });
-            setEditModalVisible(false);
-        });
     };
+    
 
     const handleDeleteDue = () => {
-        dispatch(deleteDue({ id: selectedDue?.due_details?.id, restaurantId })).then(() => {
-            setDeleteModalVisible(false);
-        });
+        dispatch(deleteDue({ id: selectedDue?.due_details?.id }))
+            .unwrap()
+            .then(() => {
+                toast.success("Due deleted successfully");
+                setDeleteModalVisible(false);
+            })
+            .catch((error) => {
+                toast.error("Error deleting due:", error);
+            });
     };
+    
 
     const renderAddDueModal = () => (
         <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
