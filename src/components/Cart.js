@@ -1,7 +1,7 @@
-import React from 'react';
-import { CCard, CCardHeader, CCardBody, CButton } from '@coreui/react';
-import { cilPlus, cilTrash } from '@coreui/icons';
-import CIcon from '@coreui/icons-react';
+import React from 'react'
+import { CCard, CCardHeader, CCardBody, CButton } from '@coreui/react'
+import { cilPlus, cilTrash } from '@coreui/icons'
+import CIcon from '@coreui/icons-react'
 
 const Cart = ({
   selectedCustomerName,
@@ -16,14 +16,15 @@ const Cart = ({
   calculateDiscountAmount,
   setShowTaxModal,
   setShowDiscountModal,
+  setShowRoundOffModal,
   calculateTotal,
 }) => {
   const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
 
   return (
     <>
@@ -45,34 +46,37 @@ const Cart = ({
           )}
         </CCardHeader>
         <CCardBody>
-          {cart.length === 0 ? (
-            <div className="text-center fs-6">Total Items: 0</div>
-          ) : (
-            cart.map((item) => (
-              <div
-                key={item.id}
-                className="d-flex justify-content-between align-items-center mb-3 p-2 border-bottom"
-              >
-                <div>
-                  <h6 className="mb-0 fw-bold fs-6 fs-md-5">
-                    {item.itemName} x {item.quantity}
-                  </h6>
-                  <small className="text-muted fs-7 fs-md-6">₹{item.price} per item</small>
+          <div style={{ maxHeight: '30vh', overflowY: 'auto' }} className="custom-scrollbar">
+            {cart.length === 0 ? (
+              <div className="text-center fs-6">Total Items: 0</div>
+            ) : (
+              cart.map((item) => (
+                <div
+                  key={item.id}
+                  className="d-flex justify-content-between align-items-center mb-3 p-2 border-bottom"
+                >
+                  <div>
+                    <h6 className="mb-0 fw-bold fs-6 fs-md-5">
+                      {item.itemName} x {item.quantity}
+                    </h6>
+                    <small className="text-muted fs-7 fs-md-6">₹{item.price} per item</small>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="fw-bold me-2 fs-6 fs-md-5">₹{item.price * item.quantity}</span>
+                    <CButton
+                      color="danger"
+                      size="sm"
+                      style={{ padding: '0.15rem 0.25rem', fontSize: '0.875rem' }}
+                      onClick={() => handleDeleteClick(item)}
+                    >
+                      <CIcon icon={cilTrash} />
+                    </CButton>
+                  </div>
                 </div>
-                <div className="d-flex align-items-center gap-2">
-                  <span className="fw-bold me-2 fs-6 fs-md-5">₹{item.price * item.quantity}</span>
-                  <CButton
-                    color="danger"
-                    size="sm"
-                    style={{ padding: '0.15rem 0.25rem', fontSize: '0.875rem' }}
-                    onClick={() => handleDeleteClick(item)}
-                  >
-                    <CIcon icon={cilTrash} />
-                  </CButton>
-                </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
+
           <hr />
           <div>
             <p className="fw-medium fs-6 fs-md-5">
@@ -99,6 +103,13 @@ const Cart = ({
             >
               Discount
             </CButton>
+            <CButton
+              color="success"
+              className="text-white fw-semibold fs-6 fs-md-5"
+              onClick={() => setShowRoundOffModal(true)}
+            >
+              Round Off
+            </CButton>
           </div>
           <h5 className="fw-bold fs-5 fs-md-4">
             Total Payable: <span className="float-end">₹{calculateTotal()}</span>
@@ -106,7 +117,7 @@ const Cart = ({
         </CCardBody>
       </CCard>
     </>
-  );
-};
+  )
+}
 
-export default Cart;
+export default Cart

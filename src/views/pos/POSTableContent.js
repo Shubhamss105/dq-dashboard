@@ -21,6 +21,7 @@ import TaxModal from '../../components/TaxModal'
 import DiscountModal from '../../components/DiscountModal'
 import PaymentModal from '../../components/PaymentModal'
 import DeleteModal from '../../components/DeleteModal'
+import RoundOffAmountModal from '../../components/RoundOffAmountModal';
 
 const POSTableContent = () => {
   const dispatch = useDispatch()
@@ -41,7 +42,9 @@ const [invoiceImage, setInvoiceImage] = useState("");
   const [elapsedTime, setElapsedTime] = useState(0)
   const [tax, setTax] = useState(0)
   const [discount, setDiscount] = useState(0)
+  const [roundOff, setRoundOff] = useState(0)
   const [showTaxModal, setShowTaxModal] = useState(false)
+  const [showRoundOffModal, setShowRoundOffModal] = useState(false)
   const [showDiscountModal, setShowDiscountModal] = useState(false)
   const [showCustomerModal, setShowCustomerModal] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -150,6 +153,7 @@ const [invoiceImage, setInvoiceImage] = useState("");
 
   const clearCart = () => {
     setCart([])
+    setRoundOff('')
     setStartTime(null)
     setElapsedTime(0)
     localStorage.removeItem(`cart_${tableNumber}`)
@@ -165,6 +169,11 @@ const [invoiceImage, setInvoiceImage] = useState("");
   const handleDiscountSubmit = () => {
     setDiscount(Number(inputValue))
     setShowDiscountModal(false)
+    setInputValue('')
+  }
+  const handleRoundOffSubmit = () => {
+    setRoundOff(Number(inputValue))
+    setShowRoundOffModal(false)
     setInputValue('')
   }
 
@@ -186,8 +195,8 @@ const [invoiceImage, setInvoiceImage] = useState("");
     const subtotal = calculateSubtotal()
     const taxAmount = (subtotal * tax) / 100
     const discountAmount = (subtotal * discount) / 100
-    return subtotal + taxAmount - discountAmount
-  }, [calculateSubtotal, tax, discount])
+    return subtotal + taxAmount - discountAmount - roundOff
+  }, [calculateSubtotal, tax, discount, roundOff])
 
   // Handle adding customer
   const handleAddCustomer = (formValues) => {
@@ -366,8 +375,10 @@ const [invoiceImage, setInvoiceImage] = useState("");
             tax={tax}
             calculateTaxAmount={calculateTaxAmount}
             discount={discount}
+            roundOffer={roundOff}
             calculateDiscountAmount={calculateDiscountAmount}
             setShowTaxModal={setShowTaxModal}
+            setShowRoundOffModal={setShowRoundOffModal}
             setShowDiscountModal={setShowDiscountModal}
             calculateTotal={calculateTotal}
           />
@@ -482,6 +493,13 @@ const [invoiceImage, setInvoiceImage] = useState("");
         inputValue={inputValue}
         setInputValue={setInputValue}
         handleDiscountSubmit={handleDiscountSubmit}
+      />
+      <RoundOffAmountModal
+        showRoundOffModal={showRoundOffModal}
+        setShowRoundOffModal={setShowRoundOffModal}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        handleRoundOffSubmit={handleRoundOffSubmit}
       />
       <PaymentModal
         showPaymentModal={showPaymentModal}

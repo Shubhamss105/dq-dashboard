@@ -57,7 +57,7 @@ const Dues = () => {
     };
 
     const handleSaveDue = (e) => {
-        e.preventDefault(); // Prevent default form submission behavior
+        e.preventDefault();
     
         if (!formData.transaction_id || !formData.total) {
             toast.error("Please fill out all required fields.");
@@ -83,36 +83,34 @@ const Dues = () => {
     
     
 
-    const handleUpdateDue = () => {
+    const handleUpdateDue = async () => {
         const payload = {
             id: selectedDue?.due_details.id,
             ...formData,
             restaurantId,
         };
     
-        dispatch(updateDue(payload))
-            .unwrap()
-            .then(() => {
-                toast.success("Due updated successfully");
-                setEditModalVisible(false);
-            })
-            .catch((error) => {
-                toast.error("Error updating due:", error);
-            });
+        try {
+            await dispatch(updateDue(payload)).unwrap();
+            setEditModalVisible(false);
+            toast.success("Due updated successfully");
+        } catch (error) {
+            toast.error(error || "Error updating due");
+        }
     };
     
+    
 
-    const handleDeleteDue = () => {
-        dispatch(deleteDue({ id: selectedDue?.due_details?.id }))
-            .unwrap()
-            .then(() => {
-                toast.success("Due deleted successfully");
-                setDeleteModalVisible(false);
-            })
-            .catch((error) => {
-                toast.error("Error deleting due:", error);
-            });
+    const handleDeleteDue = async () => {
+        try {
+            await dispatch(deleteDue({ id: selectedDue?.due_details?.id })).unwrap();
+            setDeleteModalVisible(false);
+            toast.success("Due deleted successfully");
+        } catch (error) {
+            toast.error(error || "Error deleting due");
+        }
     };
+    
     
 
     const renderAddDueModal = () => (
