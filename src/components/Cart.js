@@ -1,6 +1,6 @@
 import React from 'react'
 import { CCard, CCardHeader, CCardBody, CButton } from '@coreui/react'
-import { cilPlus, cilTrash } from '@coreui/icons'
+import { cilPlus, cilTrash, cilMinus } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 
 const Cart = ({
@@ -18,6 +18,7 @@ const Cart = ({
   setShowDiscountModal,
   setShowRoundOffModal,
   calculateTotal,
+  handleQuantityChange, // Add this prop to handle quantity changes
 }) => {
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600)
@@ -62,7 +63,36 @@ const Cart = ({
                     <small className="text-muted fs-7 fs-md-6">₹{item.price} per item</small>
                   </div>
                   <div className="d-flex align-items-center gap-2">
+                    <CButton
+                      color="light"
+                      size="sm"
+                      style={{
+                        padding: '0.1rem 0.2rem',
+                        fontSize: '0.75rem',
+                        borderRadius: '50%',
+                        backgroundColor: '#e0e0e0',
+                        border: 'none',
+                      }}
+                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                    >
+                      <CIcon icon={cilMinus} />
+                    </CButton>
+
                     <span className="fw-bold me-2 fs-6 fs-md-5">₹{item.price * item.quantity}</span>
+                    <CButton
+                      color="light"
+                      size="sm"
+                      style={{
+                        padding: '0.1rem 0.2rem',
+                        fontSize: '0.75rem',
+                        borderRadius: '50%',
+                        backgroundColor: '#e0e0e0',
+                        border: 'none',
+                      }}
+                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                    >
+                      <CIcon icon={cilPlus} />
+                    </CButton>
                     <CButton
                       color="danger"
                       size="sm"

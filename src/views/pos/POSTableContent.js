@@ -198,6 +198,14 @@ const [invoiceImage, setInvoiceImage] = useState("");
     return subtotal + taxAmount - discountAmount - roundOff
   }, [calculateSubtotal, tax, discount, roundOff])
 
+  const handleQuantityChange = (productId, newQuantity) => {
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.id === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
+      )
+    )
+  }
+
   // Handle adding customer
   const handleAddCustomer = (formValues) => {
     const customerData = { ...formValues, restaurantId }
@@ -381,6 +389,7 @@ const [invoiceImage, setInvoiceImage] = useState("");
             setShowRoundOffModal={setShowRoundOffModal}
             setShowDiscountModal={setShowDiscountModal}
             calculateTotal={calculateTotal}
+            handleQuantityChange={handleQuantityChange}
           />
         </CCol>
       </CRow>
