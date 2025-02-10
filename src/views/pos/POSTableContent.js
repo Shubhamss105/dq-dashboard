@@ -260,42 +260,57 @@ const [invoiceImage, setInvoiceImage] = useState("");
   
     if (!invoiceElement) return;
   
-    // Show the invoice section temporarily
-    invoiceElement.style.display = "block";
+    invoiceElement.style.display = "block"; // Show invoice section
   
     html2canvas(invoiceElement, { scale: 2, useCORS: true })
       .then((canvas) => {
         const imgData = canvas.toDataURL("image/png");
-        setInvoiceImage(imgData); // Set the image data for the modal
-        setShowInvoiceModal(true); // Open the modal
+        setInvoiceImage(imgData); // Set the generated image
+        setShowInvoiceModal(true); // Open modal to show invoice preview
       })
       .catch((error) => {
         toast.error(`Error generating invoice: ${error}`, { autoClose: 3000 });
       })
       .finally(() => {
-        // Hide the invoice section after generating the image
-        invoiceElement.style.display = "none";
+        invoiceElement.style.display = "none"; // Hide the invoice section after capture
       });
   };
+  
 
   const handleInvoicePrint = () => {
     const printWindow = window.open();
     if (printWindow) {
       printWindow.document.write(`
-        <html>
-          <head>
-            <title>Invoice Preview</title>
-          </head>
-          <body style="margin: 0; padding: 0;">
-            <img src="${invoiceImage}" style="width: 100%;" />
-            <script>
-              window.onload = function() {
-                window.print();
-                window.close();
-              };
-            </script>
-          </body>
-        </html>
+       <html>
+      <head>
+        <title>Invoice Print</title>
+        <style>
+          @page { 
+            size: 2in auto; /* Set print size to 2-inch width */
+            margin: 0; 
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background: white;
+          }
+          img {
+            width: 2in;
+            display: block;
+          }
+        </style>
+      </head>
+      <body>
+        <img src="${invoiceImage}" />
+        <script>
+          window.onload = function() {
+            window.print();
+            setTimeout(() => window.close(), 100);
+          };
+        </script>
+      </body>
+    </html>
       `);
       printWindow.document.close();
     }
@@ -340,20 +355,34 @@ const [invoiceImage, setInvoiceImage] = useState("");
     const printWindow = window.open()
     if (printWindow) {
       printWindow.document.write(`
-      <html>
-        <head>
-          <title>KOT</title>
-        </head>
-        <body style="margin: 0; padding: 0;">
-          <img src="${kotImage}" style="width: 100%;" />
-          <script>
-            window.onload = function() {
-              window.print();
-              window.close();
-            };
-          </script>
-        </body>
-      </html>
+     <html>
+      <head>
+        <title>KOT Print</title>
+        <style>
+          @page { 
+            size: 2in auto; /* Ensures 2-inch width */
+            margin: 0; 
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+          }
+          img {
+            width: 2in;
+          }
+        </style>
+      </head>
+      <body>
+        <img src="${kotImage}" style="width: 2in;" />
+        <script>
+          window.onload = function() {
+            window.print();
+            setTimeout(() => window.close(), 100);
+          };
+        </script>
+      </body>
+    </html>
     `)
       printWindow.document.close()
     }

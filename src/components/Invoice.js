@@ -43,7 +43,8 @@ const Invoice = React.forwardRef(
         ref={ref} // Forward the ref to this div
         style={{
           display: 'none',
-          width: '220px',
+          width: "2in",
+          maxWidth: "2in",
           padding: '10px',
           fontFamily: 'monospace',
           fontSize: '12px',
