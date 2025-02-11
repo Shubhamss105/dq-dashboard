@@ -7,7 +7,6 @@ const KOT = React.forwardRef(({ tableNumber, cart }, ref) => {
       style={{
         width: "2in",
         maxWidth: "2in",
-        width: "100%",
         padding: "10px",
         // border: "1px solid #000",
         fontFamily: "monospace",

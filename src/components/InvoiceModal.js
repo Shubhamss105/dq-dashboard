@@ -11,11 +11,13 @@ const InvoiceModal = ({ isVisible, onClose, children }) => {
         left: 0,
         width: "100%",
         height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        overflowY: "auto",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        zIndex: 1000,
+        backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+        zIndex: 9999, // Ensure modal is always on top
+        padding: "20px", // Prevent content from getting cut off
       }}
     >
       <div
@@ -24,11 +26,14 @@ const InvoiceModal = ({ isVisible, onClose, children }) => {
           borderRadius: "8px",
           padding: "20px",
           width: "90%",
-          maxWidth: "400px",
+          maxWidth: "450px",
+          maxHeight: "90vh", // Prevent overflow on smaller screens
+          overflowY: "auto", // Allow scrolling if content is large
           boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
           position: "relative",
         }}
       >
+        {/* Close Button */}
         <button
           onClick={onClose}
           style={{
@@ -39,11 +44,13 @@ const InvoiceModal = ({ isVisible, onClose, children }) => {
             border: "none",
             fontSize: "24px",
             cursor: "pointer",
-            color: "black",
+            color: "#333",
+            zIndex: 10, // Ensure it's always visible
           }}
         >
           &times;
         </button>
+
         {children}
       </div>
     </div>
