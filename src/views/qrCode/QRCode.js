@@ -25,6 +25,7 @@ export default function QRCode() {
 
   const { qrList, loading } = useSelector((state) => state.qr)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
+  const theme = useSelector((state) => state.theme.theme)
 
   const dispatch = useDispatch()
 
@@ -85,12 +86,14 @@ export default function QRCode() {
           {qrList?.map((qr) => (
             <CCol key={qr.id} xs="auto" className="mx-4">
               <CContainer
-                className="d-flex flex-column align-items-center justify-content-center bg-white shadow-lg border rounded"
+                className={`d-flex flex-column align-items-center justify-content-center shadow-lg border rounded ${
+                  theme === 'dark' ? 'bg-dark text-light' : 'bg-white text-dark'
+                }`}
                 style={{
                   width: '10rem',
                   height: '10rem',
                   marginBottom: '1rem',
-                  cursor: 'pointer',
+                  cursor: 'pointer',  
                 }}
                 onClick={() => handleQrClick(qr)}
               >

@@ -10,6 +10,7 @@ const POS = () => {
 
   const { qrList, loading, error } = useSelector((state) => state.qr)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
+  const theme = useSelector((state) => state.theme.theme)
 
   // State to track the cart for each table
   const [cart, setCart] = useState({})
@@ -30,7 +31,7 @@ const POS = () => {
       }
     })
     setCart(storedCarts)
-  }, [dispatch, restaurantId, qrList.length]) // Only rerun effect if qrList length changes (first render)
+  }, [dispatch, restaurantId, qrList.length]) 
 
   const handleQrClick = (qr) => {
     navigate(`/pos/tableNumber/${qr.tableNumber}`)
@@ -62,8 +63,8 @@ const POS = () => {
               className="mx-2 mb-4 d-flex justify-content-center"
             >
               <CContainer
-                className={`d-flex flex-column align-items-center justify-content-center shadow-lg border rounded p-3 w-100 ${
-                  isItemInCart(qr) ? 'bg-danger' : 'bg-white'
+                 className={`d-flex flex-column align-items-center justify-content-center shadow-lg border rounded p-3 w-100 ${
+                  isItemInCart(qr) ? 'bg-danger text-white' : theme === 'dark' ? 'bg-secondary text-white' : 'bg-white text-dark'
                 }`}
                 onClick={() => handleQrClick(qr)}
                 style={{
@@ -85,8 +86,10 @@ const POS = () => {
             className="mx-2 mb-4 d-flex justify-content-center"
           >
             <CContainer
-              className="d-flex flex-column align-items-center justify-content-center bg-white shadow-lg border rounded p-3 w-100"
-              onClick={() => navigate('/pos/tableNumber/0')}
+             className={`d-flex flex-column align-items-center justify-content-center shadow-lg border rounded p-3 w-100 ${
+              theme === 'dark' ? 'bg-secondary text-white' : 'bg-white text-dark'
+            }`}
+            onClick={() => navigate('/pos/tableNumber/0')}
               style={{
                 height: '10rem',
                 cursor: 'pointer',
