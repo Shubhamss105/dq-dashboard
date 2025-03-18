@@ -10,6 +10,9 @@ import PrivateRoute from './components/PrivateRoute'
 import './global.css'
 import Reservation from './views/reservations/Reservation'
 import Dues from './views/dues/Dues'
+import Help from './views/help/Help'
+import License from './views/license/License'
+import Downloads from './views/downloads/Downloads'
 
 // Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -92,6 +95,9 @@ const App = () => {
               <Route path="feedback" element={<Feedback />} />
               <Route path="reservations" element={<Reservation/>} />
               <Route path="dues" element={<Dues/>} />
+              <Route path="help" element={<Help/>} />
+              <Route path="license" element={<License/>} />
+              <Route path="downloads" element={<Downloads/>} />
               <Route path="*" element={<Page404 />} />
             </Route>
           </Routes>

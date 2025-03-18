@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { CContainer, CRow, CCol, CButton, CCardFooter } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { useParams } from 'react-router-dom'
-import { toast } from 'react-toastify';
+import { toast } from 'react-toastify'
 import { cilPlus, cilTrash, cilSearch } from '@coreui/icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchMenuItems } from '../../redux/slices/menuSlice'
@@ -21,7 +21,7 @@ import TaxModal from '../../components/TaxModal'
 import DiscountModal from '../../components/DiscountModal'
 import PaymentModal from '../../components/PaymentModal'
 import DeleteModal from '../../components/DeleteModal'
-import RoundOffAmountModal from '../../components/RoundOffAmountModal';
+import RoundOffAmountModal from '../../components/RoundOffAmountModal'
 
 const POSTableContent = () => {
   const dispatch = useDispatch()
@@ -31,13 +31,14 @@ const POSTableContent = () => {
   const { customers, loading: customerLoading } = useSelector((state) => state.customers)
   const { menuItems, loading: menuItemsLoading } = useSelector((state) => state.menuItems)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
+  const theme = useSelector((state) => state.theme.theme)
 
   const [showKOTModal, setShowKOTModal] = useState(false)
   const [kotImage, setKOTImage] = useState('')
-  const [kotItems, setKotItems] = useState([]);
+  const [kotItems, setKotItems] = useState([])
 
-  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-const [invoiceImage, setInvoiceImage] = useState("");
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false)
+  const [invoiceImage, setInvoiceImage] = useState('')
 
   const [elapsedTime, setElapsedTime] = useState(0)
   const [tax, setTax] = useState(0)
@@ -201,8 +202,8 @@ const [invoiceImage, setInvoiceImage] = useState("");
   const handleQuantityChange = (productId, newQuantity) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item.id === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
-      )
+        item.id === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item,
+      ),
     )
   }
 
@@ -218,7 +219,7 @@ const [invoiceImage, setInvoiceImage] = useState("");
         setShowCustomerModal(false)
       })
       .catch((error) => {
-        toast.error('Failed to add customer: ' + error.message);
+        toast.error('Failed to add customer: ' + error.message)
       })
   }
 
@@ -256,29 +257,28 @@ const [invoiceImage, setInvoiceImage] = useState("");
   }
 
   const generateInvoice = () => {
-    const invoiceElement = invoiceRef.current;
-  
-    if (!invoiceElement) return;
-  
-    invoiceElement.style.display = "block"; // Show invoice section
-  
+    const invoiceElement = invoiceRef.current
+
+    if (!invoiceElement) return
+
+    invoiceElement.style.display = 'block' // Show invoice section
+
     html2canvas(invoiceElement, { scale: 2, useCORS: true })
       .then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        setInvoiceImage(imgData); // Set the generated image
-        setShowInvoiceModal(true); // Open modal to show invoice preview
+        const imgData = canvas.toDataURL('image/png')
+        setInvoiceImage(imgData) // Set the generated image
+        setShowInvoiceModal(true) // Open modal to show invoice preview
       })
       .catch((error) => {
-        toast.error(`Error generating invoice: ${error}`, { autoClose: 3000 });
+        toast.error(`Error generating invoice: ${error}`, { autoClose: 3000 })
       })
       .finally(() => {
-        invoiceElement.style.display = "none"; // Hide the invoice section after capture
-      });
-  };
-  
+        invoiceElement.style.display = 'none' // Hide the invoice section after capture
+      })
+  }
 
   const handleInvoicePrint = () => {
-    const printWindow = window.open();
+    const printWindow = window.open()
     if (printWindow) {
       printWindow.document.write(`
        <html>
@@ -311,45 +311,44 @@ const [invoiceImage, setInvoiceImage] = useState("");
         </script>
       </body>
     </html>
-      `);
-      printWindow.document.close();
+      `)
+      printWindow.document.close()
     }
-  };
-  
+  }
+
   const handleSendEmail = () => {
-    alert("Send via Email functionality to be implemented.");
-  };
+    alert('Send via Email functionality to be implemented.')
+  }
 
   const generateKOT = () => {
     // Find new items that are not in the generated KOT
-    const newItems = cart.filter(item => !kotItems.some(kot => kot.id === item.id));
-  
+    const newItems = cart.filter((item) => !kotItems.some((kot) => kot.id === item.id))
+
     if (newItems.length === 0) {
-      toast.info("No new items to generate KOT!", { autoClose: 3000 });
-      return;
+      toast.info('No new items to generate KOT!', { autoClose: 3000 })
+      return
     }
-  
-    setKotItems(prevKotItems => [...prevKotItems, ...newItems]); // Update generated KOT items
-  
-    const kotElement = kotRef.current;
-    if (!kotElement) return;
-  
-    kotElement.style.display = "block";
-  
+
+    setKotItems((prevKotItems) => [...prevKotItems, ...newItems]) // Update generated KOT items
+
+    const kotElement = kotRef.current
+    if (!kotElement) return
+
+    kotElement.style.display = 'block'
+
     html2canvas(kotElement, { scale: 2 })
       .then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        setKOTImage(imgData);
-        setShowKOTModal(true);
+        const imgData = canvas.toDataURL('image/png')
+        setKOTImage(imgData)
+        setShowKOTModal(true)
       })
       .catch((error) => {
-        toast.error(`Error generating KOT: ${error}`, { autoClose: 3000 });
+        toast.error(`Error generating KOT: ${error}`, { autoClose: 3000 })
       })
       .finally(() => {
-        kotElement.style.display = "none";
-      });
-  };
-  
+        kotElement.style.display = 'none'
+      })
+  }
 
   const handlePrint = () => {
     const printWindow = window.open()
@@ -389,9 +388,12 @@ const [invoiceImage, setInvoiceImage] = useState("");
   }
 
   return (
-    <CContainer fluid className="p-4 shadow-shadow-lg bg-white">
+    <CContainer
+      fluid
+      className={`p-4 shadow-lg ${theme == 'light' ? 'bg-white text-dark' : 'bg-dark text-white'}`}
+    >
       <CRow>
-        <CCol md={8} sm={12} className="mb-4">
+        <CCol md={8} sm={12} className="mb-4" >
           <ProductList
             searchProduct={searchProduct}
             handleSearchProduct={handleSearchProduct}
@@ -480,43 +482,47 @@ const [invoiceImage, setInvoiceImage] = useState("");
             </KOTModal>
 
             {/* Invoice Modal */}
-      <InvoiceModal isVisible={showInvoiceModal} onClose={() => setShowInvoiceModal(false)}>
-        <div style={{ textAlign: "center" }}>
-          <h3>Invoice Preview</h3>
-          {invoiceImage && (
-            <img
-              src={invoiceImage}
-              alt="Invoice Preview"
-              style={{ width: "100%", marginBottom: "10px" }}
-            />
-          )}
-          <div style={{ marginTop: "10px" }}>
-            <button onClick={handleInvoicePrint}>Print</button>
-            <button onClick={handleSendEmail}>Send via Email</button>
-          </div>
-        </div>
-      </InvoiceModal>
+            <InvoiceModal isVisible={showInvoiceModal} onClose={() => setShowInvoiceModal(false)}>
+              <div style={{ textAlign: 'center' }}>
+                <h3>Invoice Preview</h3>
+                {invoiceImage && (
+                  <img
+                    src={invoiceImage}
+                    alt="Invoice Preview"
+                    style={{ width: '100%', marginBottom: '10px' }}
+                  />
+                )}
+                <div style={{ marginTop: '10px' }}>
+                  <button onClick={handleInvoicePrint}>Print</button>
+                  <button onClick={handleSendEmail}>Send via Email</button>
+                </div>
+              </div>
+            </InvoiceModal>
           </CCardFooter>
         </CCol>
       </CRow>
 
-      <div style={{ position: "absolute", left: "-9999px" }}>
-      <Invoice
-        ref={invoiceRef}
-        tableNumber={tableNumber}
-        selectedCustomerName={selectedCustomerName}
-        cart={cart}
-        calculateSubtotal={calculateSubtotal}
-        tax={tax}
-        calculateTaxAmount={calculateTaxAmount}
-        discount={discount}
-        calculateDiscountAmount={calculateDiscountAmount}
-        calculateTotal={calculateTotal}
-      />
+      <div style={{ position: 'absolute', left: '-9999px' }}>
+        <Invoice
+          ref={invoiceRef}
+          tableNumber={tableNumber}
+          selectedCustomerName={selectedCustomerName}
+          cart={cart}
+          calculateSubtotal={calculateSubtotal}
+          tax={tax}
+          calculateTaxAmount={calculateTaxAmount}
+          discount={discount}
+          calculateDiscountAmount={calculateDiscountAmount}
+          calculateTotal={calculateTotal}
+        />
       </div>
 
-<div style={{ position: "absolute", left: "-9999px" }}>
-      <KOT ref={kotRef} tableNumber={tableNumber} cart={cart.filter(item => !kotItems.includes(item))} />
+      <div style={{ position: 'absolute', left: '-9999px' }}>
+        <KOT
+          ref={kotRef}
+          tableNumber={tableNumber}
+          cart={cart.filter((item) => !kotItems.includes(item))}
+        />
       </div>
       <TaxModal
         showTaxModal={showTaxModal}

@@ -1,18 +1,22 @@
 import React from 'react';
 import { CContainer, CInputGroup, CFormInput, CFormSelect, CRow, CCol, CButton, CSpinner } from '@coreui/react';
+import { useSelector } from 'react-redux';
 
 const ProductList = ({ searchProduct, handleSearchProduct, tableNumber, menuItemsLoading, filteredMenuItems, addToCart }) => {
+  const theme = useSelector((state) => state.theme.theme);
+  const isDarkMode = theme === 'dark';
+
   return (
-    <CContainer>
+    <CContainer className={`${isDarkMode ? 'bg-dark text-light' : 'bg-white text-dark'}`}>
       {/* Search and Table Selection */}
       <CInputGroup className="mb-3">
         <CFormInput
           placeholder="Search"
-          className="me-2 fs-6 fs-md-5"
+          className={`me-2 fs-6 fs-md-5 ${isDarkMode ? 'bg-secondary text-light' : ''}`}
           value={searchProduct}
           onChange={handleSearchProduct}
         />
-        <CFormSelect className="fs-6 fs-md-5">
+        <CFormSelect className={`fs-6 fs-md-5 ${isDarkMode ? 'bg-secondary text-light' : ''}`}>
           <option>Table Number {tableNumber}</option>
         </CFormSelect>
       </CInputGroup>
@@ -34,9 +38,11 @@ const ProductList = ({ searchProduct, handleSearchProduct, tableNumber, menuItem
               <CRow className="mb-3">
                 <CCol xs={8}>
                   {/* Product Name */}
-                  <h6 className="mb-1 fw-bold fs-6 fs-md-5">{product.itemName}</h6>
+                  <h6 className={`mb-1 fw-bold fs-6 fs-md-5 ${isDarkMode ? 'text-light' : ''}`}>{product.itemName}</h6>
                   {/* Product Price */}
-                  <p className="text-muted mb-0 fs-7 fs-md-6">Price: ₹{product.price}</p>
+                  <p className={`mb-0 fs-7 fs-md-6 ${isDarkMode ? 'text-light' : 'text-muted'}`}>
+                    Price: ₹{product.price}
+                  </p>
                 </CCol>
                 <CCol xs={4} className="text-end">
                   {/* Add to Cart Button */}
@@ -50,7 +56,7 @@ const ProductList = ({ searchProduct, handleSearchProduct, tableNumber, menuItem
                 </CCol>
               </CRow>
               {/* Divider between products */}
-              {index < filteredMenuItems.length - 1 && <hr />}
+              {index < filteredMenuItems.length - 1 && <hr className={isDarkMode ? 'border-light' : ''} />}
             </div>
           ))}
         </div>
