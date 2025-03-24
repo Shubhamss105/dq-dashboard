@@ -34,13 +34,35 @@ export const updateRestaurantProfile = createAsyncThunk(
           'Content-Type': 'application/json',
         };
         // Send restaurantId in the body
-        const response = await axios.post(`${BASE_URL}/profile/${id}`, profileData, { headers });
+        const response = await axios.put(`${BASE_URL}/profile/${id}`, profileData, { headers });
         return response.data;
       } catch (error) {
         return rejectWithValue(error.response?.data || 'Something went wrong');
       }
     }
   );
+
+  export const uploadRestaurantImage = createAsyncThunk(
+    'restaurantProfile/uploadRestaurantImage',
+    async ({ id, imageFile }, { rejectWithValue }) => {
+      try {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+  
+        const response = await axios.post(`${BASE_URL}/profile/${id}/image`, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+  
+        return response.data;
+      } catch (error) {
+        return rejectWithValue(error.response?.data || 'Image upload failed');
+      }
+    }
+  );
+  
 
 const restaurantProfileSlice = createSlice({
   name: 'restaurantProfile',
@@ -82,6 +104,23 @@ const restaurantProfileSlice = createSlice({
         state.error = action.payload;
         toast.error('Failed to update profile.');
       });
+
+      builder
+  .addCase(uploadRestaurantImage.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(uploadRestaurantImage.fulfilled, (state, action) => {
+    state.loading = false;
+    state.restaurantProfile.image = action.payload.image; // Update image in state
+    toast.success('Image uploaded successfully.');
+  })
+  .addCase(uploadRestaurantImage.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+    toast.error('Failed to upload image.');
+  });
+
   },
 });
 

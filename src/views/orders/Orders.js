@@ -218,6 +218,9 @@ const Order = () => {
               <strong>Customer Name:</strong> {selectedOrder.user?.name || 'N/A'}
             </p>
             <p>
+              <strong>Customer Address:</strong> {selectedOrder.user?.address || 'N/A'}
+            </p>
+            <p>
               <strong>Table Number:</strong> {selectedOrder.table_number}
             </p>
             <p>
