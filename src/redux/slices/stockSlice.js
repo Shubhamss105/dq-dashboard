@@ -114,7 +114,8 @@ const stockSlice = createSlice({
       })
       .addCase(addInventory.fulfilled, (state, action) => {
         state.loading = false;
-        state.inventories.push(action.payload.data);
+        // state.inventories.push(action.payload.data);
+        state.inventories = [...state.inventories, action.payload.data];
         toast.success('Inventory item added successfully!');
       })
       .addCase(addInventory.rejected, (state, action) => {

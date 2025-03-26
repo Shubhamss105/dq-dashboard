@@ -50,7 +50,7 @@ const Stock = () => {
       dispatch(fetchInventories({ restaurantId }))
       dispatch(fetchSuppliers({ restaurantId }))
     }
-  }, [dispatch, restaurantId])
+  }, [])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -58,15 +58,15 @@ const Stock = () => {
 
   const handleSaveStock = () => {
     dispatch(addInventory({ restaurantId, ...formData }))
-    dispatch(fetchInventories({ restaurantId }))
+    // dispatch(fetchInventories({ restaurantId }))
     resetForm()
-    // setModalVisible(false)
+    setModalVisible(false)
   }
 
   const handleUpdateInventory = async () => {
     try {
-      await dispatch(updateInventory({ id: selectedStock.id, restaurantId, ...formData }));
-      await dispatch(fetchInventories({ restaurantId }));
+       dispatch(updateInventory({ id: selectedStock.id, restaurantId, ...formData }));
+      dispatch(fetchInventories({ restaurantId }));
       resetForm();
       // setEditModalVisible(false);
     } catch (error) {
@@ -76,8 +76,8 @@ const Stock = () => {
   
 
   const handleDeleteInventory = () => {
-    dispatch(deleteInventory({ id: selectedStock.id, restaurantId }))
-    dispatch(fetchInventories({ restaurantId }))
+    dispatch(deleteInventory({ id: selectedStock.id, restaurantId })).unwrap();
+    // dispatch(fetchInventories({ restaurantId }))
     setDeleteModalVisible(false)
   }
 
