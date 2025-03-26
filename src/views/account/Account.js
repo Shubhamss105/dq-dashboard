@@ -46,8 +46,17 @@ export default function Account() {
   const handleUpdate = async (field) => {
     setIsUpdating(true)
     try {
+      // Create an object with the field to update
+      const updateData = {
+        [field]: editValue,  // This creates an object like { phoneNumber: "1234567899" }
+        restaurantId         // Include restaurantId
+      }
+  
       await dispatch(
-        updateRestaurantProfile({ id, profileData: { field, value: editValue, restaurantId } }),
+        updateRestaurantProfile({ 
+          id, 
+          profileData: updateData  // Send the properly structured data
+        })
       )
       setProfileData((prev) => ({ ...prev, [field]: editValue }))
       setEditingField(null)

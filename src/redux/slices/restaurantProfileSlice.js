@@ -28,6 +28,7 @@ export const updateRestaurantProfile = createAsyncThunk(
     'restaurantProfile/updateRestaurantProfile',
     async ({ id, profileData }, { rejectWithValue }) => {
       try {
+        console.log('profileData',id)
         const token = localStorage.getItem('authToken');
         const headers = {
           Authorization: `Bearer ${token}`,
