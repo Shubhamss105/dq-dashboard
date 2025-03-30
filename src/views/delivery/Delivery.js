@@ -1,36 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { DataGrid } from '@mui/x-data-grid';
-import { fetchOrders, updateOrderStatus } from '../../redux/slices/orderSlice';
+import { updateOrderStatus, fetchDeliveryOrders } from '../../redux/slices/orderSlice';
 import { CButton, CSpinner } from '@coreui/react';
 import CustomToolbar from '../../utils/CustomToolbar';
 import { format } from 'date-fns';
 import { useMediaQuery } from '@mui/material';
 
-const Order = () => {
+const Delivery = () => {
   const dispatch = useDispatch();
-  const { orders, loading } = useSelector((state) => state.orders);
+  const { deliveryOrders, deliveryOrdersLoading, deliveryPagination } = useSelector((state) => state.orders);
   const restaurantId = useSelector((state) => state.auth.restaurantId);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [page, setPage] = useState(1);
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     if (restaurantId) {
-      dispatch(fetchOrders({ restaurantId }));
+      dispatch(fetchDeliveryOrders({ restaurantId, pageNo: page }));
     }
-  }, [dispatch, restaurantId]);
+  }, [dispatch, restaurantId, page]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await dispatch(updateOrderStatus({ id: orderId, status: newStatus }));
       closeSidebar();
+      // Refresh orders after status change
+      dispatch(fetchDeliveryOrders({ restaurantId, pageNo: page }));
     } catch (error) {
       console.error('Error updating status:', error);
     }
   };
 
   const closeSidebar = () => setSelectedOrder(null);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // MUI DataGrid uses 0-based index, our API uses 1-based
+  };
 
   // Style based on status
   const getStatusStyle = (status) => ({
@@ -47,8 +54,18 @@ const Order = () => {
   });
 
   const columns = [
-    // { field: 'sno', headerName: 'S.No.', flex: isMobile ? undefined : 0.5, minWidth: isMobile ? 80 : undefined, headerClassName: 'header-style' },
-    { field: 'order_id', headerName: 'Order Number', flex: isMobile ? undefined : 1, minWidth: isMobile ? 120 : undefined, headerClassName: 'header-style' },
+    { 
+        field: 'sno', 
+        headerName: 'S.No.', 
+        flex: isMobile ? undefined : 0.5, 
+        minWidth: isMobile ? 80 : undefined, 
+        headerClassName: 'header-style',
+        valueGetter: (params) => {
+          // Calculate serial number based on pagination
+          const perPage = deliveryPagination?.per_page || 10;
+          return (page * perPage) + params.row.index + 1;
+        } 
+      },
     {
       field: 'items',
       headerName: 'Items',
@@ -67,13 +84,6 @@ const Order = () => {
       minWidth: isMobile ? 150 : undefined,
       headerClassName: 'header-style',
       valueGetter: (params) => params.row.user?.name || 'N/A',
-    },
-    {
-      field: 'table_number',
-      headerName: 'Table Number',
-      flex: isMobile ? undefined : 1,
-      minWidth: isMobile ? 120 : undefined,
-      headerClassName: 'header-style',
     },
     {
       field: 'status',
@@ -115,7 +125,7 @@ const Order = () => {
       renderCell: (params) => (
         <CButton
           color="primary"
-          size={isMobile ? 'sm' : 'md'} // Adjust button size for mobile
+          size={isMobile ? 'sm' : 'sm'}
           style={isMobile ? { padding: '5px 10px', fontSize: '0.8rem', marginRight:'1rem' } : {}}
           onClick={() => setSelectedOrder(params.row)}
         >
@@ -127,8 +137,8 @@ const Order = () => {
 
   return (
     <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-      <h2 className="mb-4">Orders</h2>
-      {loading ? (
+      <h2 className="mb-4">Delivery</h2>
+      {deliveryOrdersLoading ? (
         <div className="d-flex justify-content-center">
           <CSpinner color="primary" variant="grow" />
         </div>
@@ -136,16 +146,13 @@ const Order = () => {
         <div style={{ overflowX: 'auto' }}>
           <DataGrid
             style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}
-            rows={orders
-              ?.slice()
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-              .map((order, index) => ({
-                ...order,
-                sno: index + 1,
-              }))}
-              getRowId={(row) => row.id || row.data?.id || Math.random()}
+            rows={deliveryOrders || []}
+            getRowId={(row) => row.order_id}
             columns={columns}
-            pageSize={10}
+            pageSize={deliveryPagination?.per_page || 10}
+            rowCount={deliveryPagination?.total || 0}
+            paginationMode="server"
+            onPageChange={handlePageChange}
             rowsPerPageOptions={[10]}
             slots={{ Toolbar: CustomToolbar }}
             sx={{
@@ -183,7 +190,6 @@ const Order = () => {
             ...(window.innerWidth <= 500 && { width: '70%' }),
           }}
         >
-          {/* Sidebar content */}
           <div
             style={{
               display: 'flex',
@@ -221,9 +227,6 @@ const Order = () => {
               <strong>Customer Address:</strong> {selectedOrder.user?.address || 'N/A'}
             </p>
             <p>
-              <strong>Table Number:</strong> {selectedOrder.table_number}
-            </p>
-            <p>
               <strong>Status:</strong> {selectedOrder.status}
             </p>
             <p>
@@ -235,7 +238,7 @@ const Order = () => {
             <ul style={{ paddingLeft: '20px' }}>
               {selectedOrder.order_details?.map((item, index) => (
                 <li key={index}>
-                  {item.item_name} (x{item.quantity})
+                  {item.item_name} (x{item.quantity}) - ₹{item.price}
                 </li>
               ))}
             </ul>
@@ -268,4 +271,4 @@ const Order = () => {
   );
 };
 
-export default Order;
+export default Delivery;

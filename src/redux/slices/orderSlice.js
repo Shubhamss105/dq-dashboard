@@ -22,6 +22,25 @@ export const fetchOrders = createAsyncThunk(
     }
   },
 )
+// Fetch all delivery orders for a restaurant
+export const fetchDeliveryOrders = createAsyncThunk(
+  'orders/fetchDeliveryOrders',
+  async ({ restaurantId, pageNo }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('authToken')
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      }
+
+      const response = await axios.get(`${BASE_URL}/getOrderByDelivery?restaurantId=${restaurantId}&page=${pageNo}`, {
+        headers,
+      })
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.error || 'Failed to fetch orders')
+    }
+  },
+)
 
 // Fetch order by ID
 export const fetchOrderById = createAsyncThunk(
@@ -154,6 +173,8 @@ const orderSlice = createSlice({
   name: 'orders',
   initialState: {
     orders: [],
+    deliveryOrders: [],
+    deliveryOrdersLoading:false,
     orderDetails: null,
     notificationOrders: [],
     newOrderCount: 0,
@@ -174,14 +195,25 @@ const orderSlice = createSlice({
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false
-        // const newOrders = action.payload.filter(
-        //   (order) => !state.orders.find((o) => o.id === order.id)
-        // );
-        // state.newOrderCount += newOrders.length;
         state.orders = action.payload.data
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false
+        state.error = action.payload
+        toast.error('Failed to fetch orders.')
+      })
+    // Fetch delivery orders
+    builder
+      .addCase(fetchDeliveryOrders.pending, (state) => {
+        state.deliveryOrdersLoading = true
+        state.error = null
+      })
+      .addCase(fetchDeliveryOrders.fulfilled, (state, action) => {
+        state.deliveryOrdersLoading = false
+        state.deliveryOrders = action.payload.data
+      })
+      .addCase(fetchDeliveryOrders.rejected, (state, action) => {
+        state.deliveryOrdersLoading = false
         state.error = action.payload
         toast.error('Failed to fetch orders.')
       })

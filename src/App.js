@@ -13,6 +13,7 @@ import Dues from './views/dues/Dues'
 import Help from './views/help/Help'
 import License from './views/license/License'
 import Downloads from './views/downloads/Downloads'
+import Delivery from './views/delivery/Delivery'
 
 // Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -80,6 +81,7 @@ const App = () => {
               <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="delivery" element={<Delivery/>} />
               <Route path="supplier" element={<Supplier />} />
               <Route path="qr-code" element={<QRCode />} />
               <Route path="category" element={<Category />} />

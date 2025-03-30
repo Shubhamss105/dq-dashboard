@@ -46,6 +46,7 @@ const Invoice = React.forwardRef(
           width: "2in",
           maxWidth: "2in",
           padding: '10px',
+          marginBottom:'20px',
           fontFamily: 'monospace',
           fontSize: '12px',
           lineHeight: '1.2',

@@ -121,7 +121,7 @@ const Dues = () => {
             <CModalBody>
                 <CForm onSubmit={handleSaveDue}>
                     <div className="mb-3">
-                        <label htmlFor="transaction_id">Transaction</label>
+                        <label htmlFor="transaction_id">Customer</label>
                         <Select
                             options={transactions.map((transaction) => ({
                                 value: transaction.id,
@@ -130,7 +130,7 @@ const Dues = () => {
                             onChange={(selectedOption) =>
                                 setFormData({ ...formData, transaction_id: selectedOption.value })
                             }
-                            placeholder="Search or select a transaction"
+                            placeholder="Search or select a customer"
                             isLoading={transactionLoading}
                             className="basic-single"
                             classNamePrefix="select"
@@ -185,9 +185,9 @@ const Dues = () => {
             </CModalHeader>
             <CModalBody>
                 <div className="mb-3">
-                    <label htmlFor="transaction_id">Transaction</label>
+                    <label htmlFor="transaction_id">Customer</label>
                     <Select
-                        options={transactions.map((transaction) => ({
+                        options={transactions?.map((transaction) => ({
                             value: transaction.id,
                             label: transaction.userName,
                         }))}
