@@ -126,7 +126,7 @@ export default function QRCode() {
         </CModalHeader>
         <CModalBody>
           <CFormInput
-            type="number"
+            type="text"
             placeholder="Table number"
             value={tableNo}
             onChange={(e) => setTableNo(e.target.value)}

@@ -9,6 +9,7 @@ import {
     deleteDue,
 } from '../../redux/slices/duesSlice';
 import { fetchTransactionsByRestaurant } from '../../redux/slices/transactionSlice';
+import {fetchCustomers} from '../../redux/slices/customerSlice';
 import CustomToolbar from '../../utils/CustomToolbar';
 import {
     CButton,
@@ -29,7 +30,8 @@ import Select from 'react-select';
 const Dues = () => {
     const dispatch = useDispatch();
     const { dues, loading } = useSelector((state) => state.dues);
-    const { transactions, loading: transactionLoading } = useSelector((state) => state.transactions);
+    // const { transactions, loading: transactionLoading } = useSelector((state) => state.transactions);
+    const { customers, loading: customersLoading } = useSelector((state) => state.customers);
     const restaurantId = useSelector((state) => state.auth.restaurantId);
 
     const isMobile = useMediaQuery('(max-width:600px)');
@@ -47,7 +49,8 @@ const Dues = () => {
     useEffect(() => {
         if (restaurantId) {
             dispatch(fetchDues({ restaurantId }));
-            dispatch(fetchTransactionsByRestaurant({ restaurantId }));
+            // dispatch(fetchTransactionsByRestaurant({ restaurantId }));
+            dispatch(fetchCustomers({ restaurantId }));
         }
     }, [dispatch, restaurantId]);
 
@@ -123,15 +126,15 @@ const Dues = () => {
                     <div className="mb-3">
                         <label htmlFor="transaction_id">Customer</label>
                         <Select
-                            options={transactions.map((transaction) => ({
+                            options={customers.map((transaction) => ({
                                 value: transaction.id,
-                                label: transaction.userName,
+                                label: transaction.name,
                             }))}
                             onChange={(selectedOption) =>
                                 setFormData({ ...formData, transaction_id: selectedOption.value })
                             }
                             placeholder="Search or select a customer"
-                            isLoading={transactionLoading}
+                            isLoading={customersLoading}
                             className="basic-single"
                             classNamePrefix="select"
                             required
@@ -187,16 +190,16 @@ const Dues = () => {
                 <div className="mb-3">
                     <label htmlFor="transaction_id">Customer</label>
                     <Select
-                        options={transactions?.map((transaction) => ({
+                        options={customers?.map((transaction) => ({
                             value: transaction.id,
                             label: transaction.userName,
                         }))}
                         onChange={(selectedOption) =>
                             setFormData({ ...formData, transaction_id: selectedOption.value })
                         }
-                        value={{ value: formData.transaction_id, label: transactions.find(t => t.id === formData.transaction_id)?.userName }}
+                        value={{ value: formData.transaction_id, label: customers.find(t => t.id === formData.transaction_id)?.userName }}
                         placeholder="Search or select a transaction"
-                        isLoading={transactionLoading}
+                        isLoading={customersLoading}
                         className="basic-single"
                         classNamePrefix="select"
                         required

@@ -118,7 +118,7 @@ export const fetchNotificationOrders = createAsyncThunk(
         Authorization: `Bearer ${token}`,
       }
 
-      const response = await axios.get(`${BASE_URL}/notification/${restaurantId}`, {
+      const response = await axios.get(`${BASE_URL}/orders/notification/${restaurantId}`, {
         headers,
       })
       return response.data
@@ -179,6 +179,7 @@ const orderSlice = createSlice({
     notificationOrders: [],
     newOrderCount: 0,
     loading: false,
+    notificationLoading: false,
     error: null,
   },
   reducers: {
@@ -199,6 +200,21 @@ const orderSlice = createSlice({
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false
+        state.error = action.payload
+        toast.error('Failed to fetch orders.')
+      })
+    // Fetch notifications
+    builder
+      .addCase(fetchNotificationOrders.pending, (state) => {
+        state.notificationLoading = true
+        state.error = null
+      })
+      .addCase(fetchNotificationOrders.fulfilled, (state, action) => {
+        state.notificationLoading = false
+        state.notificationOrders = action.payload
+      })
+      .addCase(fetchNotificationOrders.rejected, (state, action) => {
+        state.notificationLoading = false
         state.error = action.payload
         toast.error('Failed to fetch orders.')
       })
