@@ -22,6 +22,18 @@ export const getRestaurantProfile = createAsyncThunk(
     }
   }
 );
+// GET API: check restaurant permission
+export const checkRestaurantPermission = createAsyncThunk(
+  'restaurantProfile/checkRestaurantPermission',
+  async ({ restaurantId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/admin/check-permission/${restaurantId}`, { headers: getAuthHeaders() });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Something went wrong');
+    }
+  }
+);
 
 // PUT API: Update restaurant profile
 export const updateRestaurantProfile = createAsyncThunk(
@@ -71,6 +83,7 @@ const restaurantProfileSlice = createSlice({
     restaurantProfile: null,
     loading: false,
     error: null,
+    restaurantPermission: null
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -85,6 +98,20 @@ const restaurantProfileSlice = createSlice({
         state.restaurantProfile = action.payload;
       })
       .addCase(getRestaurantProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        toast.error('Failed to fetch restaurant profile.');
+      })
+      // check restaurant permission
+      .addCase(checkRestaurantPermission.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkRestaurantPermission.fulfilled, (state, action) => {
+        state.loading = false;
+        state.restaurantPermission = action.payload;
+      })
+      .addCase(checkRestaurantPermission.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         toast.error('Failed to fetch restaurant profile.');
