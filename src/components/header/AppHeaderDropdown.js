@@ -23,6 +23,7 @@ import avatar8 from './../../assets/images/avatars/8.jpg'
 
 const AppHeaderDropdown = () => {
   const dispatch = useDispatch()
+  const [hasInitialized, setHasInitialized] = useState(false)
 
   const { restaurantId, token, auth } = useSelector(
     (state) => ({
@@ -53,19 +54,25 @@ const AppHeaderDropdown = () => {
   }, [dispatch, restaurantId]) 
 
   // Detect new orders
-useEffect(() => {
-  if (!Array.isArray(notificationOrders) || !Array.isArray(previousOrders)) return;
-
-  if (notificationOrders.length > previousOrders.length) {
-    toast.success('New Order Received! 🎉')
-    play()
-  }
-
-  // Update only if the orders changed
-  if (JSON.stringify(notificationOrders) !== JSON.stringify(previousOrders)) {
-    setPreviousOrders(notificationOrders)
-  }
-}, [notificationOrders, play])
+  useEffect(() => {
+    if (!Array.isArray(notificationOrders)) return;
+  
+    const storedOrders = sessionStorage.getItem('previousOrders')
+    const parsedStoredOrders = storedOrders ? JSON.parse(storedOrders) : []
+  
+    // Only show toast if previousOrders exist (not first load) and there's a new order
+    if (parsedStoredOrders.length && notificationOrders.length > parsedStoredOrders.length) {
+      toast.success('New Order Received! 🎉')
+      play()
+    }
+  
+    // Save current orders for next comparison
+    if (JSON.stringify(notificationOrders) !== JSON.stringify(parsedStoredOrders)) {
+      setPreviousOrders(notificationOrders)
+      sessionStorage.setItem('previousOrders', JSON.stringify(notificationOrders))
+    }
+  }, [notificationOrders, play])
+  
   
 
   useEffect(() => {
