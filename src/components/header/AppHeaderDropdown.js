@@ -57,22 +57,22 @@ const AppHeaderDropdown = () => {
   useEffect(() => {
     if (!Array.isArray(notificationOrders)) return;
   
-    const storedOrders = sessionStorage.getItem('previousOrders')
-    const parsedStoredOrders = storedOrders ? JSON.parse(storedOrders) : []
+    // Skip the initial fetch comparison
+    if (!hasInitialized) {
+      setPreviousOrders(notificationOrders)
+      setHasInitialized(true)
+      return
+    }
   
-    // Only show toast if previousOrders exist (not first load) and there's a new order
-    if (parsedStoredOrders.length && notificationOrders.length > parsedStoredOrders.length) {
+    if (notificationOrders.length > previousOrders.length) {
       toast.success('New Order Received! 🎉')
       play()
     }
   
-    // Save current orders for next comparison
-    if (JSON.stringify(notificationOrders) !== JSON.stringify(parsedStoredOrders)) {
+    if (JSON.stringify(notificationOrders) !== JSON.stringify(previousOrders)) {
       setPreviousOrders(notificationOrders)
-      sessionStorage.setItem('previousOrders', JSON.stringify(notificationOrders))
     }
-  }, [notificationOrders, play])
-  
+  }, [notificationOrders, play, hasInitialized, previousOrders])
   
 
   useEffect(() => {

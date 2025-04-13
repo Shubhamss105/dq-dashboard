@@ -54,6 +54,25 @@ export const updateRestaurantProfile = createAsyncThunk(
       }
     }
   );
+//restaurant FCM
+export const updateRestaurantFCM = createAsyncThunk(
+    'restaurantProfile/updateFCM',
+    async ({ id, fcm }, { rejectWithValue }) => {
+      try {
+        console.log('profileData',id)
+        const token = localStorage.getItem('authToken');
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        };
+        // Send restaurantId in the body
+        const response = await axios.put(`${BASE_URL}/restaurant/updateFcm/${id}`, fcm, { headers });
+        return response.data;
+      } catch (error) {
+        return rejectWithValue(error.response?.data || 'Something went wrong');
+      }
+    }
+  );
 
   export const uploadRestaurantImage = createAsyncThunk(
     'restaurantProfile/uploadRestaurantImage',
@@ -83,9 +102,16 @@ const restaurantProfileSlice = createSlice({
     restaurantProfile: null,
     loading: false,
     error: null,
-    restaurantPermission: null
+    restaurantPermission: null,
+    fcmToken: null,
+    fcmUpdateStatus: 'idle'
   },
-  reducers: {},
+  reducers: {
+    resetFCMStatus: (state) => {
+      state.fcmUpdateStatus = 'idle';
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
       // Get Restaurant Profile
@@ -147,9 +173,32 @@ const restaurantProfileSlice = createSlice({
     state.loading = false;
     state.error = action.payload;
     toast.error('Failed to upload image.');
+  })
+  // Add FCM update cases
+  builder
+  .addCase(updateRestaurantFCM.pending, (state) => {
+    state.fcmUpdateStatus = 'loading';
+    state.error = null;
+  })
+  .addCase(updateRestaurantFCM.fulfilled, (state, action) => {
+    state.fcmUpdateStatus = 'succeeded';
+    state.fcmToken = action.payload.fcmToken;
+    
+    // Also update FCM token in restaurant profile if it exists
+    if (state.restaurantProfile) {
+      state.restaurantProfile.fcmToken = action.payload.fcmToken;
+    }
+    
+    toast.success('FCM token updated successfully');
+  })
+  .addCase(updateRestaurantFCM.rejected, (state, action) => {
+    state.fcmUpdateStatus = 'failed';
+    state.error = action.payload;
+    toast.error('Failed to update FCM token');
   });
 
   },
 });
+export const { resetFCMStatus } = restaurantProfileSlice.actions;
 
 export default restaurantProfileSlice.reducer;

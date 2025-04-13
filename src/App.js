@@ -100,6 +100,7 @@ const App = () => {
 
   // Check if permission is loaded (not undefined)
   const isPermissionLoaded = restaurantPermission !== undefined
+  
 
   return (
     <>
