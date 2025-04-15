@@ -17,6 +17,7 @@ const Transactions = () => {
   const dispatch = useDispatch();
   const { transactions, loading } = useSelector((state) => state.transactions);
   const restaurantId = useSelector((state) => state.auth.restaurantId);
+  const auth = useSelector((state) => state.auth.auth);
   const theme = useSelector((state) => state.theme.theme); 
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -31,39 +32,134 @@ const Transactions = () => {
     }
   }, [dispatch, restaurantId]);
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+  
+    const options = {
+      year: 'numeric',
+      month: 'short', // Mar
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    };
+  
+    return date.toLocaleString('en-US', options);
+  };
+  
+
   const generateInvoicePDF = (transactionDetails) => {
     const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text('Invoice', 14, 20);
-    doc.setFontSize(12);
-
-    // Add transaction details
-    doc.text(`Transaction ID: ${transactionDetails.id}`, 14, 30);
-    doc.text(`User Name: ${transactionDetails.userName}`, 14, 40);
-    doc.text(`Date: ${transactionDetails.created_at}`, 14, 50);
-    doc.text(`Payment Type: ${transactionDetails.payment_type}`, 14, 60);
-
-    // Add items table
-    const items = transactionDetails?.items?.map((item, index) => [
-      index + 1,
-      item.itemName,
-      item.price,
-      item.quantity,
-      item.price * item.quantity,
-    ]);
-
-    doc.autoTable({
-      startY: 70,
-      head: [['#', 'Item Name', 'Price', 'Quantity', 'Total']],
-      body: items,
+    let yPos = 15;
+    
+    // Set font styles
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    
+    // Restaurant Details (centered)
+    doc.text(auth?.restName || 'Restaurant Name', 105, yPos, { align: 'center' });
+    yPos += 7;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(auth?.address || 'Restaurant Address', 105, yPos, { align: 'center' });
+    yPos += 5;
+    doc.text(`Pin Code: ${auth?.pinCode || 'XXXXXX'}`, 105, yPos, { align: 'center' });
+    yPos += 5;
+    doc.text(`Phone: ${auth?.phoneNumber || 'N/A'}`, 105, yPos, { align: 'center' });
+    yPos += 10;
+    
+    // Divider line
+    doc.line(20, yPos, 190, yPos);
+    yPos += 8;
+    
+    // Invoice title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('INVOICE', 105, yPos, { align: 'center' });
+    yPos += 8;
+    
+    // Invoice details
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    // const invoiceDate = formatDate(transactionDetails.created_at);
+    // doc.text(`Date: ${invoiceDate}`, 20, yPos);
+    doc.text(`Invoice #: ${transactionDetails.id}`, 160, yPos);
+    yPos += 5;
+    
+    doc.text(`Customer: ${transactionDetails.userName || 'Walk-in Customer'}`, 20, yPos);
+    doc.text(`Table: ${transactionDetails.tableNumber || 'N/A'}`, 160, yPos);
+    yPos += 5;
+    
+    doc.text(`Payment Type: ${transactionDetails.payment_type}`, 20, yPos);
+    yPos += 10;
+    
+    // Divider line
+    doc.line(20, yPos, 190, yPos);
+    yPos += 8;
+    
+    // Order details header
+    doc.setFont('helvetica', 'bold');
+    doc.text('Order Details:', 20, yPos);
+    yPos += 7;
+    
+    // Table headers
+    doc.setFont('helvetica', 'bold');
+    doc.text('#', 20, yPos);
+    doc.text('Item', 40, yPos);
+    doc.text('Price', 120, yPos);
+    doc.text('Qty', 150, yPos);
+    doc.text('Total', 180, yPos, { align: 'right' });
+    yPos += 5;
+    
+    // Divider line
+    doc.line(20, yPos, 190, yPos);
+    yPos += 5;
+    
+    // Order items
+    doc.setFont('helvetica', 'normal');
+    transactionDetails.items?.forEach((item, index) => {
+      doc.text(`${index + 1}`, 20, yPos);
+      doc.text(item.itemName, 40, yPos);
+      doc.text(`₹${item.price.toFixed(2)}`, 120, yPos);
+      doc.text(`${item.quantity}`, 150, yPos);
+      doc.text(`₹${(item.price * item.quantity).toFixed(2)}`, 180, yPos, { align: 'right' });
+      yPos += 7;
     });
-
-    // Add total section
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.text(`Subtotal: ${transactionDetails.sub_total}`, 14, finalY);
-    doc.text(`Tax: ${transactionDetails.tax}`, 14, finalY + 10);
-    doc.text(`Discount: ${transactionDetails.discount}`, 14, finalY + 20);
-    doc.text(`Total: ${transactionDetails.total}`, 14, finalY + 30);
+    
+    yPos += 5;
+    // Divider line
+    doc.line(20, yPos, 190, yPos);
+    yPos += 8;
+    
+    // Totals
+    doc.text('Subtotal:', 140, yPos);
+    doc.text(`₹${transactionDetails?.sub_total.toFixed(2)}`, 180, yPos, { align: 'right' });
+    yPos += 7;
+    
+    doc.text(`Tax (${transactionDetails.tax_rate || 0}%):`, 140, yPos);
+    doc.text(`₹${transactionDetails?.tax.toFixed(2)}`, 180, yPos, { align: 'right' });
+    yPos += 7;
+    
+    doc.text(`Discount (${transactionDetails?.discount_rate || 0}%):`, 140, yPos);
+    doc.text(`₹${transactionDetails?.discount.toFixed(2)}`, 180, yPos, { align: 'right' });
+    yPos += 10;
+    
+    // Divider line
+    doc.line(20, yPos, 190, yPos);
+    yPos += 8;
+    
+    // Grand Total
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Total Amount:', 140, yPos);
+    doc.text(`₹${transactionDetails.total.toFixed(2)}`, 180, yPos, { align: 'right' });
+    yPos += 15;
+    
+    // Thank you message
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('--- Thank you for your visit ---', 105, yPos, { align: 'center' });
 
     return doc;
   };

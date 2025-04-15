@@ -54,18 +54,7 @@ const Delivery = () => {
   });
 
   const columns = [
-    { 
-        field: 'sno', 
-        headerName: 'S.No.', 
-        flex: isMobile ? undefined : 0.5, 
-        minWidth: isMobile ? 80 : undefined, 
-        headerClassName: 'header-style',
-        valueGetter: (params) => {
-          // Calculate serial number based on pagination
-          const perPage = deliveryPagination?.per_page || 10;
-          return (page * perPage) + params.row.index + 1;
-        } 
-      },
+    { field: 'order_id', headerName: 'Order Number', flex: isMobile ? undefined : 1, minWidth: isMobile ? 120 : undefined, headerClassName: 'header-style' },
     {
       field: 'items',
       headerName: 'Items',

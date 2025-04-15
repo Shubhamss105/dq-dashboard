@@ -65,6 +65,11 @@ const POSTableContent = () => {
     const savedStartTime = localStorage.getItem(`start_time_${tableNumber}`)
     return savedStartTime ? new Date(savedStartTime) : null
   })
+  const [mobilePrintOptions, setMobilePrintOptions] = useState({
+    show: false,
+    pdfUrl: null,
+    message: '',
+  })
 
   useEffect(() => {
     if (startTime) {
@@ -277,42 +282,145 @@ const POSTableContent = () => {
       })
   }
 
+  const handleMobileDownload = (platform) => {
+    // Create a PDF from the invoice image using a library like jsPDF
+    import('jspdf')
+      .then((jsPDF) => {
+        const { jsPDF: JSPDF } = jsPDF
+        const doc = new JSPDF({
+          orientation: 'portrait',
+          unit: 'in',
+          format: [2, 8], // 2-inch width receipt
+        })
+
+        // Add the image to the PDF
+        const img = new Image()
+        img.src = invoiceImage
+        img.onload = () => {
+          // Calculate height based on aspect ratio
+          const ratio = img.height / img.width
+          const imgHeight = 2 * ratio // 2-inch width with proper aspect ratio
+
+          doc.addImage(invoiceImage, 'PNG', 0, 0, 2, imgHeight)
+
+          if (platform === 'ios') {
+            // For iOS, we can offer to open in another app
+            const pdfOutput = doc.output('blob')
+            const pdfUrl = URL.createObjectURL(pdfOutput)
+
+            // Show options dialog for iOS
+            setMobilePrintOptions({
+              show: true,
+              pdfUrl,
+              message:
+                'iOS devices require you to download the PDF and print from Files or another app.',
+            })
+          } else if (platform === 'android') {
+            // For Android, similar approach but with Android-specific guidance
+            const pdfOutput = doc.output('blob')
+            const pdfUrl = URL.createObjectURL(pdfOutput)
+
+            // Show options dialog for Android
+            setMobilePrintOptions({
+              show: true,
+              pdfUrl,
+              message: "Download the PDF and use your device's print service or a printing app.",
+            })
+          } else {
+            // Generic mobile approach
+            const pdfOutput = doc.output('blob')
+            const pdfUrl = URL.createObjectURL(pdfOutput)
+
+            setMobilePrintOptions({
+              show: true,
+              pdfUrl,
+              message: 'Download the invoice as PDF to print from another app.',
+            })
+          }
+        }
+      })
+      .catch((error) => {
+        toast.error(`Error preparing mobile print: ${error}`, { autoClose: 3000 })
+      })
+  }
+
   const handleInvoicePrint = () => {
-    const printWindow = window.open()
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    )
+  
+    if (isMobile) {
+      if (/Android/i.test(navigator.userAgent)) {
+        // Android-specific printing solution
+        handleAndroidPrint()
+      } else if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        handleMobileDownload('ios')
+      } else {
+        handleMobileDownload('other')
+      }
+    } else {
+      // Desktop printing - existing implementation
+      const printWindow = window.open()
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Invoice Print</title>
+              <style>
+                @page { size: 2in auto; margin: 0; }
+                body { margin: 0; padding: 0; text-align: center; background: white; }
+                img { width: 2in; display: block; }
+              </style>
+            </head>
+            <body>
+              <img src="${invoiceImage}" />
+              <script>
+                window.onload = function() {
+                  window.print();
+                  setTimeout(() => window.close(), 100);
+                };
+              </script>
+            </body>
+          </html>
+        `)
+        printWindow.document.close()
+      }
+    }
+  }
+  
+  const handleAndroidPrint = () => {
+    // Create a new window with the invoice image
+    const printWindow = window.open('', '_blank')
     if (printWindow) {
       printWindow.document.write(`
-       <html>
-      <head>
-        <title>Invoice Print</title>
-        <style>
-          @page { 
-            size: 2in auto; /* Set print size to 2-inch width */
-            margin: 0; 
-          }
-          body {
-            margin: 0;
-            padding: 0;
-            text-align: center;
-            background: white;
-          }
-          img {
-            width: 2in;
-            display: block;
-          }
-        </style>
-      </head>
-      <body>
-        <img src="${invoiceImage}" />
-        <script>
-          window.onload = function() {
-            window.print();
-            setTimeout(() => window.close(), 100);
-          };
-        </script>
-      </body>
-    </html>
+        <html>
+          <head>
+            <title>Print Invoice</title>
+            <style>
+              @page { size: auto; margin: 0mm; }
+              body { margin: 0; }
+              img { width: 100%; height: auto; }
+            </style>
+          </head>
+          <body>
+            <img src="${invoiceImage}" />
+            <script>
+              setTimeout(() => {
+                window.print()
+                setTimeout(() => window.close(), 1000)
+              }, 500)
+            </script>
+          </body>
+        </html>
       `)
       printWindow.document.close()
+    } else {
+      // Fallback if popup blocked
+      setMobilePrintOptions({
+        show: true,
+        pdfUrl: invoiceImage, // Use the image directly
+        message: 'Please allow popups to print. Then tap the image and select "Print" from your browser menu.'
+      })
     }
   }
 
@@ -387,13 +495,115 @@ const POSTableContent = () => {
     }
   }
 
+  const MobilePrintOptionsModal = ({ isVisible, options, onClose }) => {
+    if (!isVisible || !options) return null
+  
+    const isAndroid = /Android/i.test(navigator.userAgent)
+  
+    return (
+      <div className="mobile-print-modal" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        zIndex: 9999,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div className="modal-content" style={{
+          backgroundColor: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          maxWidth: '90%',
+          maxHeight: '90%',
+          overflow: 'auto'
+        }}>
+          <h3>Print Options</h3>
+          <p>{options.message}</p>
+          
+          {isAndroid && (
+            <div className="android-options" style={{marginBottom: '15px'}}>
+              <p><strong>Android Printing Instructions:</strong></p>
+              <ol style={{textAlign: 'left', paddingLeft: '20px'}}>
+                <li>Download the PDF using the button below</li>
+                <li>Open your Downloads folder</li>
+                <li>Tap on the invoice.pdf file</li>
+                <li>Select "Print" from the menu options</li>
+                <li>Choose your printer</li>
+              </ol>
+            </div>
+          )}
+          
+          <div className="button-group" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}>
+            <a 
+              href={options.pdfUrl} 
+              download="invoice.pdf" 
+              className="btn btn-primary"
+              style={{
+                padding: '10px 15px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                textDecoration: 'none',
+                textAlign: 'center'
+              }}
+            >
+              Download PDF
+            </a>
+            
+            <button 
+              onClick={() => {
+                handleSendEmail()
+                onClose()
+              }} 
+              className="btn btn-secondary"
+              style={{
+                padding: '10px 15px',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px'
+              }}
+            >
+              Send via Email
+            </button>
+          </div>
+          
+          <button 
+            onClick={onClose} 
+            className="btn btn-light mt-3"
+            style={{
+              padding: '10px 15px',
+              backgroundColor: '#f8f9fa',
+              color: '#212529',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              marginTop: '15px',
+              width: '100%'
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <CContainer
       fluid
       className={`p-4 shadow-lg ${theme == 'light' ? 'bg-white text-dark' : 'bg-dark text-white'}`}
     >
       <CRow>
-        <CCol md={8} sm={12} className="mb-4" >
+        <CCol md={8} sm={12} className="mb-4">
           <ProductList
             searchProduct={searchProduct}
             handleSearchProduct={handleSearchProduct}
@@ -568,6 +778,11 @@ const POSTableContent = () => {
         handleCustomerSelect={handleCustomerSelect}
         customerLoading={customerLoading}
         handleAddCustomer={handleAddCustomer}
+      />
+      <MobilePrintOptionsModal
+        isVisible={mobilePrintOptions.show}
+        options={mobilePrintOptions}
+        onClose={() => setMobilePrintOptions({ ...mobilePrintOptions, show: false })}
       />
     </CContainer>
   )

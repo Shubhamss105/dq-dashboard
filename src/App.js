@@ -42,7 +42,7 @@ const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const PermissionRestrictedRoute = ({ children, permission }) => {
   if (permission === 0) {
     return (
-      <div style={{ filter: 'blur(5px)', pointerEvents: 'none' }}>
+      <div style={{ filter: 'blur(5px)', pointerEvents: 'none', position: 'relative' }}>
         {children}
         <div style={{
           position: 'fixed',
@@ -63,8 +63,11 @@ const PermissionRestrictedRoute = ({ children, permission }) => {
       </div>
     )
   }
+
+  // Ensure no extra rendering when permission is allowed
   return children
 }
+
 
 const App = () => {
   const dispatch = useDispatch()
