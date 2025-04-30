@@ -6,6 +6,7 @@ import { CSpinner, useColorModes } from '@coreui/react'
 import { useDispatch, useSelector, shallowEqual } from 'react-redux'
 import { onMessage, isSupported } from 'firebase/messaging'
 import { messaging } from './firebase'
+import { toast } from 'react-toastify';
 
 import './scss/style.scss'
 import './scss/examples.scss'
@@ -19,6 +20,8 @@ import Downloads from './views/downloads/Downloads'
 import Delivery from './views/delivery/Delivery'
 import { checkRestaurantPermission } from './redux/slices/restaurantProfileSlice'
 import DeliveryTiming from './views/deliveryTiming/DeliveryTiming'
+import useSound from 'use-sound'
+import notificationSound from './assets/notification.mp3'
 
 // Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -85,6 +88,7 @@ const App = () => {
   )
 
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const [play] = useSound(notificationSound)
 
   useEffect(() => {
     const setupForegroundNotifications = async () => {
@@ -103,7 +107,6 @@ const App = () => {
         }
 
         const unsubscribe = onMessage(messagingResolved, (payload) => {
-          console.log('Foreground message received:', payload)
           
           // Check if Notification API is available
           if ('Notification' in window) {
@@ -133,10 +136,12 @@ const App = () => {
           }
 
           // Show toast notification as fallback
-          toast.info(payload.notification?.body || 'New notification received', {
-            position: 'top-right',
-            autoClose: 5000,
-          })
+          // toast.info(payload.notification?.body || 'New notification received', {
+          //   position: 'top-right',
+          //   autoClose: 5000,
+          // })
+          toast.success('New Order Received! 🎉')
+          play()
         })
 
         return () => {

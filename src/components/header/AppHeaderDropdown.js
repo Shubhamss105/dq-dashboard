@@ -33,53 +33,52 @@ const AppHeaderDropdown = () => {
     }),
     shallowEqual,
   )
-  const [previousOrders, setPreviousOrders] = useState([])
-  const { notificationOrders=[] } = useSelector((state) => state.orders)
+  // const [previousOrders, setPreviousOrders] = useState([])
+  // const { notificationOrders=[] } = useSelector((state) => state.orders)
 
-  const [play] = useSound(notificationSound)
+  // const [play] = useSound(notificationSound)
 
-  useEffect(() => {
-    if (!restaurantId) return 
+  // useEffect(() => {
+  //   if (!restaurantId) return 
 
-    const POLLING_INTERVAL = 10000 
+  //   const POLLING_INTERVAL = 10000 
 
-    const fetchOrders = async () => {
-      dispatch(fetchNotificationOrders({ restaurantId }))
-    }
+  //   const fetchOrders = async () => {
+  //     dispatch(fetchNotificationOrders({ restaurantId }))
+  //   }
 
-    const interval = setInterval(fetchOrders, POLLING_INTERVAL)
-    fetchOrders()
+  //   const interval = setInterval(fetchOrders, POLLING_INTERVAL)
+  //   fetchOrders()
 
-    return () => clearInterval(interval)
-  }, [dispatch, restaurantId]) 
+  //   return () => clearInterval(interval)
+  // }, [dispatch, restaurantId]) 
 
-  // Detect new orders
-  useEffect(() => {
-    if (!Array.isArray(notificationOrders)) return;
+  // useEffect(() => {
+  //   if (!Array.isArray(notificationOrders)) return;
   
-    // Skip the initial fetch comparison
-    if (!hasInitialized) {
-      setPreviousOrders(notificationOrders)
-      setHasInitialized(true)
-      return
-    }
+  //   // Skip the initial fetch comparison
+  //   if (!hasInitialized) {
+  //     setPreviousOrders(notificationOrders)
+  //     setHasInitialized(true)
+  //     return
+  //   }
   
-    if (notificationOrders.length > previousOrders.length) {
-      toast.success('New Order Received! 🎉')
-      play()
-    }
+  //   if (notificationOrders.length > previousOrders.length) {
+  //     toast.success('New Order Received! 🎉')
+  //     play()
+  //   }
   
-    if (JSON.stringify(notificationOrders) !== JSON.stringify(previousOrders)) {
-      setPreviousOrders(notificationOrders)
-    }
-  }, [notificationOrders, play, hasInitialized, previousOrders])
+  //   if (JSON.stringify(notificationOrders) !== JSON.stringify(previousOrders)) {
+  //     setPreviousOrders(notificationOrders)
+  //   }
+  // }, [notificationOrders, play, hasInitialized, previousOrders])
   
 
-  useEffect(() => {
-    if (restaurantId && token) {
-      dispatch(fetchRestaurantDetails({ restaurantId, token }))
-    }
-  }, [dispatch])
+  // useEffect(() => {
+  //   if (restaurantId && token) {
+  //     dispatch(fetchRestaurantDetails({ restaurantId, token }))
+  //   }
+  // }, [dispatch])
 
   const handleLogout = () => {
     dispatch(localLogout())
