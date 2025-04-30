@@ -17,6 +17,7 @@ import feedbackReducer from './slices/feedbackSlice';
 import sidebarReducer from './slices/sidebarSlice';
 import reservationReducer from './slices/reservationSlice';
 import dueReducer from './slices/duesSlice';
+import deliveryTimingReducer from './slices/deliveryTimingSlice'
 
 // Configure the Redux store
 const store = configureStore({
@@ -38,6 +39,7 @@ const store = configureStore({
     sidebar: sidebarReducer,
     reservations: reservationReducer,
     dues: dueReducer,
+    deliveryTimings: deliveryTimingReducer
   },
 });
 

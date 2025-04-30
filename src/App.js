@@ -4,6 +4,8 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { CSpinner, useColorModes } from '@coreui/react'
 import { useDispatch, useSelector, shallowEqual } from 'react-redux'
+import { onMessage, isSupported } from 'firebase/messaging'
+import { messaging } from './firebase'
 
 import './scss/style.scss'
 import './scss/examples.scss'
@@ -16,6 +18,7 @@ import License from './views/license/License'
 import Downloads from './views/downloads/Downloads'
 import Delivery from './views/delivery/Delivery'
 import { checkRestaurantPermission } from './redux/slices/restaurantProfileSlice'
+import DeliveryTiming from './views/deliveryTiming/DeliveryTiming'
 
 // Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -84,6 +87,70 @@ const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
   useEffect(() => {
+    const setupForegroundNotifications = async () => {
+      try {
+        // Check if Firebase Messaging is supported
+        const isFCMsupported = await isSupported()
+        if (!isFCMsupported) {
+          console.warn('Firebase Messaging not supported in this browser')
+          return
+        }
+
+        const messagingResolved = messaging
+        if (!messagingResolved) {
+          console.warn('Firebase Messaging not initialized')
+          return
+        }
+
+        const unsubscribe = onMessage(messagingResolved, (payload) => {
+          console.log('Foreground message received:', payload)
+          
+          // Check if Notification API is available
+          if ('Notification' in window) {
+            // Check if permission is granted
+            if (Notification.permission === 'granted') {
+              try {
+                const notificationTitle = payload.notification?.title || 'New Notification'
+                const notificationOptions = {
+                  body: payload.notification?.body || 'You have a new order',
+                  // icon: '/path/to/notification-icon.png', // Add your icon path
+                  vibrate: [200, 100, 200] // Vibration pattern
+                }
+                
+                // Show system notification
+                const notification = new Notification(notificationTitle, notificationOptions)
+                
+                // Optional: Add click handler
+                notification.onclick = (event) => {
+                  event.preventDefault()
+                  window.focus()
+                  // You can add navigation logic here if needed
+                }
+              } catch (error) {
+                console.error('Error showing notification:', error)
+              }
+            }
+          }
+
+          // Show toast notification as fallback
+          toast.info(payload.notification?.body || 'New notification received', {
+            position: 'top-right',
+            autoClose: 5000,
+          })
+        })
+
+        return () => {
+          if (unsubscribe) unsubscribe()
+        }
+      } catch (error) {
+        console.error('Error setting up foreground notifications:', error)
+      }
+    }
+
+    setupForegroundNotifications()
+  }, [])
+
+  useEffect(() => {
     if (restaurantId) {
       dispatch(checkRestaurantPermission({ restaurantId }))
     }
@@ -148,6 +215,11 @@ const App = () => {
                     <Route path="delivery" element={
                       <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
                         <Delivery />
+                      </PermissionRestrictedRoute>
+                    } />
+                    <Route path="delivery-timing" element={
+                      <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                        <DeliveryTiming/>
                       </PermissionRestrictedRoute>
                     } />
                     <Route path="supplier" element={
