@@ -282,147 +282,163 @@ const POSTableContent = () => {
       })
   }
 
-  const handleMobileDownload = (platform) => {
-    // Create a PDF from the invoice image using a library like jsPDF
-    import('jspdf')
-      .then((jsPDF) => {
-        const { jsPDF: JSPDF } = jsPDF
-        const doc = new JSPDF({
-          orientation: 'portrait',
-          unit: 'in',
-          format: [2, 8], // 2-inch width receipt
-        })
+const handleInvoicePrint = () => {
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
 
-        // Add the image to the PDF
-        const img = new Image()
-        img.src = invoiceImage
-        img.onload = () => {
-          // Calculate height based on aspect ratio
-          const ratio = img.height / img.width
-          const imgHeight = 2 * ratio // 2-inch width with proper aspect ratio
-
-          doc.addImage(invoiceImage, 'PNG', 0, 0, 2, imgHeight)
-
-          if (platform === 'ios') {
-            // For iOS, we can offer to open in another app
-            const pdfOutput = doc.output('blob')
-            const pdfUrl = URL.createObjectURL(pdfOutput)
-
-            // Show options dialog for iOS
-            setMobilePrintOptions({
-              show: true,
-              pdfUrl,
-              message:
-                'iOS devices require you to download the PDF and print from Files or another app.',
-            })
-          } else if (platform === 'android') {
-            // For Android, similar approach but with Android-specific guidance
-            const pdfOutput = doc.output('blob')
-            const pdfUrl = URL.createObjectURL(pdfOutput)
-
-            // Show options dialog for Android
-            setMobilePrintOptions({
-              show: true,
-              pdfUrl,
-              message: "Download the PDF and use your device's print service or a printing app.",
-            })
-          } else {
-            // Generic mobile approach
-            const pdfOutput = doc.output('blob')
-            const pdfUrl = URL.createObjectURL(pdfOutput)
-
-            setMobilePrintOptions({
-              show: true,
-              pdfUrl,
-              message: 'Download the invoice as PDF to print from another app.',
-            })
-          }
-        }
-      })
-      .catch((error) => {
-        toast.error(`Error preparing mobile print: ${error}`, { autoClose: 3000 })
-      })
-  }
-
-  const handleInvoicePrint = () => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    )
-  
-    if (isMobile) {
-      if (/Android/i.test(navigator.userAgent)) {
-        // Android-specific printing solution
-        handleAndroidPrint()
-      } else if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        handleMobileDownload('ios')
-      } else {
-        handleMobileDownload('other')
-      }
+  if (isMobile) {
+    if (/Android/i.test(navigator.userAgent)) {
+      // Android-specific printing solution
+      handleAndroidPrint();
+    } else if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+      handleMobileDownload('ios');
     } else {
-      // Desktop printing - existing implementation
-      const printWindow = window.open()
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Invoice Print</title>
-              <style>
-                @page { size: 2in auto; margin: 0; }
-                body { margin: 0; padding: 0; text-align: center; background: white; }
-                img { width: 2in; display: block; }
-              </style>
-            </head>
-            <body>
-              <img src="${invoiceImage}" />
-              <script>
-                window.onload = function() {
-                  window.print();
-                  setTimeout(() => window.close(), 100);
-                };
-              </script>
-            </body>
-          </html>
-        `)
-        printWindow.document.close()
-      }
+      handleMobileDownload('other');
     }
-  }
-  
-  const handleAndroidPrint = () => {
-    // Create a new window with the invoice image
-    const printWindow = window.open('', '_blank')
+  } else {
+    // Desktop printing - existing implementation
+    const printWindow = window.open();
     if (printWindow) {
       printWindow.document.write(`
         <html>
           <head>
-            <title>Print Invoice</title>
+            <title>Invoice Print</title>
             <style>
-              @page { size: auto; margin: 0mm; }
-              body { margin: 0; }
-              img { width: 100%; height: auto; }
+              @page {
+                size: 2in auto; /* Ensures 2-inch width */
+                margin: 0;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+                text-align: center;
+              }
+              img {
+                width: 2in;
+              }
             </style>
           </head>
           <body>
             <img src="${invoiceImage}" />
             <script>
-              setTimeout(() => {
-                window.print()
-                setTimeout(() => window.close(), 1000)
-              }, 500)
+              window.onload = function() {
+                window.print();
+                setTimeout(() => window.close(), 100);
+              };
             </script>
           </body>
         </html>
-      `)
-      printWindow.document.close()
-    } else {
-      // Fallback if popup blocked
-      setMobilePrintOptions({
-        show: true,
-        pdfUrl: invoiceImage, // Use the image directly
-        message: 'Please allow popups to print. Then tap the image and select "Print" from your browser menu.'
-      })
+      `);
+      printWindow.document.close();
     }
   }
+};
+
+const handleAndroidPrint = () => {
+  // Create a new window with the invoice image
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Invoice</title>
+          <style>
+            @page {
+              size: auto;
+              margin: 0mm;
+            }
+            body {
+              margin: 0;
+            }
+            img {
+              width: 100%;
+              height: auto;
+            }
+          </style>
+        </head>
+        <body>
+          <img src="${invoiceImage}" />
+          <script>
+            setTimeout(() => {
+              window.print();
+              setTimeout(() => window.close(), 1000);
+            }, 500);
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  } else {
+    // Fallback if popup blocked
+    setMobilePrintOptions({
+      show: true,
+      pdfUrl: invoiceImage, // Use the image directly
+      message: 'Please allow popups to print. Then tap the image and select "Print" from your browser menu.'
+    });
+  }
+};
+
+const handleMobileDownload = (platform) => {
+  // Create a PDF from the invoice image using a library like jsPDF
+  import('jspdf').then((jsPDF) => {
+    const { jsPDF: JSPDF } = jsPDF;
+    const doc = new JSPDF({
+      orientation: 'portrait',
+      unit: 'in',
+      format: [2, 8], // 2-inch width receipt
+    });
+
+    // Add the image to the PDF
+    const img = new Image();
+    img.src = invoiceImage;
+    img.onload = () => {
+      // Calculate height based on aspect ratio
+      const ratio = img.height / img.width;
+      const imgHeight = 2 * ratio; // 2-inch width with proper aspect ratio
+
+      doc.addImage(invoiceImage, 'PNG', 0, 0, 2, imgHeight);
+
+      if (platform === 'ios') {
+        // For iOS, we can offer to open in another app
+        const pdfOutput = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfOutput);
+
+        // Show options dialog for iOS
+        setMobilePrintOptions({
+          show: true,
+          pdfUrl,
+          message:
+            'iOS devices require you to download the PDF and print from Files or another app.',
+        });
+      } else if (platform === 'android') {
+        // For Android, similar approach but with Android-specific guidance
+        const pdfOutput = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfOutput);
+
+        // Show options dialog for Android
+        setMobilePrintOptions({
+          show: true,
+          pdfUrl,
+          message: "Download the PDF and use your device's print service or a printing app.",
+        });
+      } else {
+        // Generic mobile approach
+        const pdfOutput = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfOutput);
+
+        setMobilePrintOptions({
+          show: true,
+          pdfUrl,
+          message: 'Download the invoice as PDF to print from another app.',
+        });
+      }
+    };
+  }).catch((error) => {
+    toast.error(`Error preparing mobile print: ${error}`, { autoClose: 3000 });
+  });
+};
+
 
   const handleSendEmail = () => {
     alert('Send via Email functionality to be implemented.')

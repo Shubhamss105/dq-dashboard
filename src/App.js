@@ -22,6 +22,7 @@ import { checkRestaurantPermission } from './redux/slices/restaurantProfileSlice
 import DeliveryTiming from './views/deliveryTiming/DeliveryTiming'
 import useSound from 'use-sound'
 import notificationSound from './assets/notification.mp3'
+import WooOrders from './views/delivery/WooOrders'
 
 // Lazy Loading for pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -219,9 +220,14 @@ const App = () => {
                     <Route path="orders" element={<Orders />} />
                     <Route path="delivery" element={
                       <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
-                        <Delivery />
+                        <WooOrders/>
                       </PermissionRestrictedRoute>
                     } />
+                    {/* <Route path="delivery" element={
+                      <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                        <Delivery />
+                      </PermissionRestrictedRoute>
+                    } /> */}
                     <Route path="delivery-timing" element={
                       <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
                         <DeliveryTiming/>
