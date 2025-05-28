@@ -155,6 +155,16 @@ const _nav = [
         name: 'Payment Report',
         to: '/payment-report',
       },
+      {
+        component: CNavItem,
+        name: 'Customer Report',
+        to: '/customer-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Table Report',
+        to: '/table-report',
+      },
     
     ],
   },

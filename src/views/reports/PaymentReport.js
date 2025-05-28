@@ -10,7 +10,6 @@ const PaymentReport = () => {
   const dispatch = useDispatch()
   const { reportByType, loading } = useSelector((state) => state.reports)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
-
   useEffect(() => {
     if (restaurantId) {
       dispatch(fetchReportByType({ restaurantId }))

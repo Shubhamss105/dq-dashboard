@@ -23,6 +23,8 @@ import DeliveryTiming from './views/deliveryTiming/DeliveryTiming'
 import useSound from 'use-sound'
 import notificationSound from './assets/notification.mp3'
 import WooOrders from './views/delivery/WooOrders'
+import CustomerReport from './views/reports/CustomerReport'
+import TableReport from './views/reports/TableReport'
 
 // Lazy Loading for pages
 const SubCategory = React.lazy(() => import('./views/subCategory/SubCategory'))
@@ -300,6 +302,16 @@ const App = () => {
                     <Route path="payment-report" element={
                       <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
                         <PaymentReport />
+                      </PermissionRestrictedRoute>
+                    } />
+                    <Route path="customer-report" element={
+                      <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                        <CustomerReport />
+                      </PermissionRestrictedRoute>
+                    } />
+                    <Route path="table-report" element={
+                      <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                        <TableReport />
                       </PermissionRestrictedRoute>
                     } />
                     <Route path="feedback" element={
