@@ -32,6 +32,7 @@ export default function Category() {
 
   const dispatch = useDispatch()
   const { categories, loading } = useSelector((state) => state.category)
+  console.log(categories)
   const token = useSelector((state) => state.auth.token)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
 

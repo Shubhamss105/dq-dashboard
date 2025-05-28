@@ -39,6 +39,13 @@ const _nav = [
     to: '/category',
     icon: <CIcon icon={cilMenu} customClassName="nav-icon"/>,
   },
+  //  adding subcategory
+  {
+    component: CNavItem,
+    name: 'SubCategory',
+    to: '/subCategory',
+    icon: <CIcon icon={cilMenu} customClassName="nav-icon"/>,
+  },
   {
     component: CNavItem,
     name: 'Menu',

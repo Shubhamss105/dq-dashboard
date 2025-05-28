@@ -25,6 +25,7 @@ import notificationSound from './assets/notification.mp3'
 import WooOrders from './views/delivery/WooOrders'
 
 // Lazy Loading for pages
+const SubCategory = React.lazy(() => import('./views/subCategory/SubCategory'))
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Register = React.lazy(() => import('./views/pages/register/Register'))
@@ -246,6 +247,14 @@ const App = () => {
                     <Route path="category" element={
                       <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
                         <Category />
+                      </PermissionRestrictedRoute>
+                    } />
+
+
+                    {/* adding subcategory route */}
+                    <Route path="subCategory" element={
+                      <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                        <SubCategory/>
                       </PermissionRestrictedRoute>
                     } />
                     <Route path="stock" element={
