@@ -16,7 +16,6 @@
 // const Transactions = () => {
 //   const dispatch = useDispatch();
 //   const { transactions, loading } = useSelector((state) => state.transactions);
-//   console.log('transactions',transactions);
 //   const restaurantId = useSelector((state) => state.auth.restaurantId);
 //   const auth = useSelector((state) => state.auth.auth);
 //   const theme = useSelector((state) => state.theme.theme);
@@ -56,6 +55,7 @@
 //     doc.setFont('helvetica', 'bold');
 //     doc.setFontSize(14);
 
+//     console.log("transaction details" , transactionDetails);
 //     // Restaurant Details (centered)
 //     doc.text(auth?.restName || 'Restaurant Name', 105, yPos, { align: 'center' });
 //     yPos += 7;
@@ -353,6 +353,7 @@ import { useMediaQuery } from '@mui/material'
 const Transactions = () => {
   const dispatch = useDispatch()
   const { transactions, loading } = useSelector((state) => state.transactions)
+
   const restaurantId = useSelector((state) => state.auth.restaurantId)
   const auth = useSelector((state) => state.auth.auth)
   const theme = useSelector((state) => state.theme.theme)
@@ -392,9 +393,9 @@ const Transactions = () => {
 
     const pageWidth = 80
     let y = 8
-
     const centerText = (text, yPos, fontSize = 10, fontStyle = 'normal') => {
-      doc.setFont('helvetica', fontStyle)
+      // doc.setFont('helvetica', fontStyle)
+      doc.setFont('Courier', fontStyle)
       doc.setFontSize(fontSize)
       doc.text(text, pageWidth / 2, yPos, { align: 'center' })
     }
@@ -406,13 +407,14 @@ const Transactions = () => {
     }
 
     // Header
-    centerText(auth?.restName || 'Restaurant Name', y, 12, 'bold')
+
+    centerText(auth?.restName || 'Restaurant Name', y, 15)
     y += 5
-    centerText(auth?.address || 'Address Line', y, 8)
+    centerText(transactionDetails.restaurantAddress || 'Address Line', y, 8)
     y += 4
     centerText(`Pin: ${auth?.pinCode || 'XXXXXX'} `, y, 8)
     y += 4
-    centerText(`Ph: ${auth?.phoneNumber || 'N/A'}`, y, 8)
+    centerText(`Ph: ${transactionDetails.phoneNumber || 'N/A'}`, y, 8)
     y += 5
     line()
 
@@ -437,39 +439,32 @@ const Transactions = () => {
       const lineItem1 = `${item.itemName} x${item.quantity}`
       centerText(lineItem1, y, 8)
       y += 4
-      const lineItem2 = `₹${(item.price * item.quantity).toFixed(2)}`
+      const lineItem2 = ` Rs. ${(item.price * item.quantity).toFixed(2)}`
       centerText(lineItem2, y, 8)
       y += 4
     })
 
     y += 1
     line()
-  
+
+    console.log(transactionDetails)
 
     // Totals
-    centerText(`Subtotal: ₹${transactionDetails.sub_total.toFixed(2)}`, y, 8)
+    centerText(`Subtotal: Rs ${transactionDetails.sub_total.toFixed(2)}`, y, 8)
     y += 4
-    centerText(
-      `Tax (${transactionDetails.tax_rate || 0}%): ₹${transactionDetails.tax.toFixed(2)}`,
-      y,
-      8,
-    )
+    centerText(`Tax:  Rs ${transactionDetails.tax.toFixed(2)}`, y, 8)
     y += 4
-    centerText(
-      `Discount (${transactionDetails.discount_rate || 0}%): ₹${transactionDetails.discount.toFixed(2)}`,
-      y,
-      8,
-    )
+    centerText(`Discount: Rs. ${transactionDetails.discount.toFixed(2)}`, y, 8)
     y += 4
     line()
     y += 4
 
-    centerText(`Total: ₹${transactionDetails.total.toFixed(2)}`, y, 10, 'bold')
+    centerText(`Total: Rs ${transactionDetails.total.toFixed(2)}`, y, 10, 'bold')
     y += 6
 
     line()
-    y += 2
-    centerText('--- Thank you for your visit ---', y, 9)
+    y += 10
+    centerText('--- Thank you for your visit ---', y, 10)
 
     return doc
   }
