@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import {
-    DataGrid
-  } from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchInventories,
@@ -10,7 +8,7 @@ import {
   deleteInventory,
 } from '../../../redux/slices/stockSlice'
 import { fetchSuppliers } from '../../../redux/slices/supplierSlice'
-import CustomToolbar from '../../../utils/CustomToolbar';
+import CustomToolbar from '../../../utils/CustomToolbar'
 import {
   CButton,
   CModal,
@@ -58,25 +56,28 @@ const Stock = () => {
 
   const handleSaveStock = () => {
     dispatch(addInventory({ restaurantId, ...formData }))
-    // dispatch(fetchInventories({ restaurantId }))
+    dispatch(fetchSuppliers({ restaurantId }))
+
+    dispatch(fetchInventories({ restaurantId }))
     resetForm()
     setModalVisible(false)
   }
 
   const handleUpdateInventory = async () => {
     try {
-       dispatch(updateInventory({ id: selectedStock.id, restaurantId, ...formData }));
-      dispatch(fetchInventories({ restaurantId }));
-      resetForm();
-      // setEditModalVisible(false);
+      // console.log('formData', formData);
+      dispatch(updateInventory({ id: selectedStock.id, restaurantId, ...formData }))
+      dispatch(fetchSuppliers({ restaurantId }))
+      dispatch(fetchInventories({ restaurantId }))
+      resetForm()
+      setEditModalVisible(false)
     } catch (error) {
-      console.error('Error updating inventory:', error);
+      console.error('Error updating inventory:', error)
     }
-  };
-  
+  }
 
   const handleDeleteInventory = () => {
-    dispatch(deleteInventory({ id: selectedStock.id, restaurantId })).unwrap();
+    dispatch(deleteInventory({ id: selectedStock.id, restaurantId })).unwrap()
     // dispatch(fetchInventories({ restaurantId }))
     setDeleteModalVisible(false)
   }
@@ -194,21 +195,21 @@ const Stock = () => {
         </CButton>
       </div>
       <div style={{ height: 'auto', width: '100%', backgroundColor: 'white' }}>
-      {inventoryLoading || supplierLoading ? (
-        <div className="d-flex justify-content-center">
-          <CSpinner color="primary" variant="grow" />
-        </div>
-      ) : (
-        <DataGrid
-          rows={inventories || []}
-          columns={columns}
-          autoHeight
-        //   components={{ Toolbar: GridToolbar }}
-        slots={{
-            toolbar: CustomToolbar,
-          }}
-        />
-      )}
+        {inventoryLoading || supplierLoading ? (
+          <div className="d-flex justify-content-center">
+            <CSpinner color="primary" variant="grow" />
+          </div>
+        ) : (
+          <DataGrid
+            rows={inventories || []}
+            columns={columns}
+            autoHeight
+            //   components={{ Toolbar: GridToolbar }}
+            slots={{
+              toolbar: CustomToolbar,
+            }}
+          />
+        )}
       </div>
       {/* Add Inventory Modal */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
@@ -256,7 +257,7 @@ const Stock = () => {
             Close
           </CButton>
           <CButton color="primary" onClick={handleSaveStock}>
-            {inventoryLoading?"Saving...":"Save"}
+            {inventoryLoading ? 'Saving...' : 'Save'}
           </CButton>
         </CModalFooter>
       </CModal>
@@ -306,7 +307,7 @@ const Stock = () => {
             Close
           </CButton>
           <CButton color="primary" onClick={handleUpdateInventory}>
-            {inventoryLoading ? "Updating...": "Update"}
+            {inventoryLoading ? 'Updating...' : 'Update'}
           </CButton>
         </CModalFooter>
       </CModal>
