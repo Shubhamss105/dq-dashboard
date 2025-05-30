@@ -19,7 +19,7 @@ import reservationReducer from './slices/reservationSlice'
 import dueReducer from './slices/duesSlice'
 import deliveryTimingReducer from './slices/deliveryTimingSlice'
 import subCategoryReducer from './slices/subCategorySlice'
-
+import sendBulkEmailReducer from './slices/SendBulkEmailSlice'
 // Configure the Redux store
 const store = configureStore({
   reducer: {
@@ -42,6 +42,7 @@ const store = configureStore({
     dues: dueReducer,
     deliveryTimings: deliveryTimingReducer,
     subCategory: subCategoryReducer,
+    bulkEmail: sendBulkEmailReducer,
   },
 })
 

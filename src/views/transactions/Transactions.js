@@ -349,11 +349,11 @@ import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import CustomToolbar from '../../utils/CustomToolbar'
 import { useMediaQuery } from '@mui/material'
-
+import {getRestaurantProfile} from '../../redux/slices/restaurantProfileSlice'
 const Transactions = () => {
   const dispatch = useDispatch()
   const { transactions, loading } = useSelector((state) => state.transactions)
-
+  
   const restaurantId = useSelector((state) => state.auth.restaurantId)
   const auth = useSelector((state) => state.auth.auth)
   const theme = useSelector((state) => state.theme.theme)
@@ -363,6 +363,9 @@ const Transactions = () => {
   const [pdfDoc, setPdfDoc] = useState(null)
 
   const isMobile = useMediaQuery('(max-width:600px)')
+  
+  const { restaurantProfile } = useSelector((state) => state.restaurantProfile);
+
 
   useEffect(() => {
     if (restaurantId) {
@@ -370,6 +373,12 @@ const Transactions = () => {
     }
   }, [dispatch, restaurantId])
 
+
+  useEffect(()=>{
+    if(restaurantId){
+      dispatch(getRestaurantProfile({restaurantId}))
+    }
+  },[]);
   const formatDate = (dateString) => {
     const date = new Date(dateString)
 
@@ -408,11 +417,11 @@ const Transactions = () => {
 
     // Header
 
-    centerText(auth?.restName || 'Restaurant Name', y, 15)
+    centerText(restaurantProfile?.restName || 'Restaurant Name', y, 15)
     y += 5
     centerText(transactionDetails.restaurantAddress || 'Address Line', y, 8)
     y += 4
-    centerText(`Pin: ${auth?.pinCode || 'XXXXXX'} `, y, 8)
+    centerText(`PinCode: ${restaurantProfile.pinCode || 'XXXXXX'} `, y, 8)
     y += 4
     centerText(`Ph: ${transactionDetails.phoneNumber || 'N/A'}`, y, 8)
     y += 5
