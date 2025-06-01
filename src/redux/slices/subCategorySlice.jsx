@@ -36,7 +36,6 @@ export const fetchSubCategories = createAsyncThunk(
   async ({ token }, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${BASE_URL}/admin/subcategories`, configureHeaders(token))
-      console.log('Fetched subcategories:', response?.data)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch subcategories')

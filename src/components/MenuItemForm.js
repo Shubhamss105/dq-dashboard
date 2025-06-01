@@ -1,12 +1,31 @@
-import React, { useState } from 'react'
+
+
+import React from 'react'
 import { CForm, CFormInput, CFormSelect, CRow, CCol, CButton } from '@coreui/react'
 
-const MenuItemForm = ({ formData, handleInputChange, handleImageChange, handleStockChange, addStockField, categories, inventories, previewImage, onSubmit, formId }) => {
+const MenuItemForm = ({
+  formData,
+  handleInputChange,
+  handleImageChange,
+  handleStockChange,
+  addStockField,
+  categories,
+  subCategories,
+  inventories,
+  previewImage,
+  onSubmit,
+  formId
+}) => {
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
     onSubmit(); 
   };
+
+  // Filter subcategories based on selected category
+  const filteredSubCategories = subCategories?.filter(
+  (sub) => sub.category_id === Number(formData.categoryId)
+);
 
   return (
     <CForm id={formId} onSubmit={handleFormSubmit}>
@@ -20,6 +39,7 @@ const MenuItemForm = ({ formData, handleInputChange, handleImageChange, handleSt
         required
         id="validationDefault01"
       />
+
       <CFormSelect
         name="categoryId"
         label="Category Name"
@@ -34,6 +54,23 @@ const MenuItemForm = ({ formData, handleInputChange, handleImageChange, handleSt
           </option>
         ))}
       </CFormSelect>
+
+      <CFormSelect
+        name="sub_category"
+        label="Subcategory"
+        value={formData.sub_category}
+        onChange={handleInputChange}
+        required
+        disabled={!formData.categoryId}
+      >
+        <option value="">Select a subcategory</option>
+        {filteredSubCategories?.map((sub) => (
+          <option key={sub.id} value={sub.id}>
+            {sub.sub_category_name}
+          </option>
+        ))}
+      </CFormSelect>
+
       <CFormInput
         type="file"
         label="Item Image"
@@ -57,6 +94,7 @@ const MenuItemForm = ({ formData, handleInputChange, handleImageChange, handleSt
         placeholder="Enter price"
         required
       />
+
       {formData?.stockItems?.map((stock, index) => (
         <CRow key={index} className="align-items-center mb-2">
           <CCol xs={6}>

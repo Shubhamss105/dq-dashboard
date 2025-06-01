@@ -32,7 +32,7 @@ export default function Category() {
 
   const dispatch = useDispatch()
   const { categories, loading } = useSelector((state) => state.category)
-  console.log(categories)
+  // console.log(categories)
   const token = useSelector((state) => state.auth.token)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
 
@@ -49,6 +49,7 @@ export default function Category() {
     }
   
     const formData = { categoryName, categoryImage, restaurantId, token }
+    // console.log('formData', formData)
     dispatch(createCategory(formData)).then(() => {
       dispatch(fetchCategories({ restaurantId, token }));
       setCategoryName('')

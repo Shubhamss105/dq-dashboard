@@ -17,6 +17,7 @@ import {
   cilNewspaper,
   cibIndeed,
   cibMessenger,
+  cilImage,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem} from '@coreui/react'
 
@@ -105,6 +106,12 @@ const _nav = [
     name: 'Feedbacks',
     to: '/feedback',
     icon: <CIcon icon={cibMessenger} customClassName="nav-icon"/>,
+  },
+  {
+    component: CNavItem,
+    name: 'Banners',
+    to: '/banners',
+    icon: <CIcon icon={cilImage} customClassName="nav-icon"/>,
   },
 
 

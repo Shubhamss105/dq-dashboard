@@ -25,6 +25,7 @@ import notificationSound from './assets/notification.mp3'
 import WooOrders from './views/delivery/WooOrders'
 import CustomerReport from './views/reports/CustomerReport'
 import TableReport from './views/reports/TableReport'
+import Banner from './views/banners/Banner'
 
 // Lazy Loading for pages
 const SubCategory = React.lazy(() => import('./views/subCategory/SubCategory'))
@@ -267,6 +268,11 @@ const App = () => {
                     <Route path="menu" element={
                       <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
                         <Menu />
+                      </PermissionRestrictedRoute>
+                    } />
+                    <Route path="banners" element={
+                      <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                        <Banner/>
                       </PermissionRestrictedRoute>
                     } />
                     <Route path="customers" element={
