@@ -8,10 +8,10 @@ export const createTransaction = createAsyncThunk(
   'transactions/createTransaction',
   async (transactionData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken')
       const headers = {
         Authorization: `Bearer ${token}`,
-      };
+      }
       const response = await axios.post(`${BASE_URL}/transactions`, transactionData, { headers })
       return response.data
     } catch (error) {
@@ -53,6 +53,23 @@ export const fetchTransactionDetails = createAsyncThunk(
     }
   },
 )
+// DELETE API: Delete transaction by transactionId
+export const deleteTransaction = createAsyncThunk(
+  'transactions/deleteTransaction',
+  async (id, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('authToken')
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      }
+    
+      await axios.delete(`${BASE_URL}/deleteTransaction/${id}`, { headers })
+      return id
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Something went wrong')
+    }
+  },
+)
 
 const transactionSlice = createSlice({
   name: 'transactions',
@@ -72,7 +89,7 @@ const transactionSlice = createSlice({
       })
       .addCase(createTransaction.fulfilled, (state, action) => {
         state.loading = false
-        state.transactions = action.payload 
+        state.transactions = action.payload
         state.error = null
         toast.success('Transaction created successfully.')
       })
@@ -110,6 +127,26 @@ const transactionSlice = createSlice({
         state.loading = false
         state.error = action.payload
         toast.error('Failed to fetch transaction details.')
+      })
+
+      // Delete Transaction
+      .addCase(deleteTransaction.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(deleteTransaction.fulfilled, (state, action) => {
+        state.loading = false
+        if (action.payload) {
+          state.transactions = state.transactions.filter(
+            (transaction) => transaction.id !== action.payload,
+          )
+          toast.success('Transaction deleted successfully.')
+        }
+      })
+      .addCase(deleteTransaction.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+        toast.error('Failed to delete transaction.')
       })
   },
 })
