@@ -3,15 +3,17 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { BASE_URL } from '../../utils/constants'
 
+const token = localStorage.getItem('authToken')
+const headers = {
+  Authorization: `Bearer ${token}`,
+}
+
 // POST API: Create a transaction
 export const createTransaction = createAsyncThunk(
   'transactions/createTransaction',
   async (transactionData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken')
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      }
+      
       const response = await axios.post(`${BASE_URL}/transactions`, transactionData, { headers })
       return response.data
     } catch (error) {
@@ -25,10 +27,7 @@ export const fetchTransactionsByRestaurant = createAsyncThunk(
   'transactions/fetchTransactionsByRestaurant',
   async ({ restaurantId }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken')
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      }
+     
       const response = await axios.get(`${BASE_URL}/transactions/${restaurantId}`, { headers })
       return response.data
     } catch (error) {
@@ -42,10 +41,7 @@ export const fetchTransactionDetails = createAsyncThunk(
   'transactions/fetchTransactionDetails',
   async ({ transactionId }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken')
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      }
+      
       const response = await axios.get(`${BASE_URL}/transactionById/${transactionId}`, { headers })
       return response.data
     } catch (error) {
@@ -56,14 +52,11 @@ export const fetchTransactionDetails = createAsyncThunk(
 // DELETE API: Delete transaction by transactionId
 export const deleteTransaction = createAsyncThunk(
   'transactions/deleteTransaction',
-  async (id, { rejectWithValue }) => {
+  async ({ id, note }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('authToken')
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      }
-    
-      await axios.delete(`${BASE_URL}/deleteTransaction/${id}`, { headers })
+      
+
+      await axios.delete(`${BASE_URL}/deleteTransaction/${id}`, { headers }, { note })
       return id
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Something went wrong')
@@ -71,10 +64,26 @@ export const deleteTransaction = createAsyncThunk(
   },
 )
 
+// GET API: Fetch POS transactions (no restaurant ID needed)
+export const fetchPOSTransactions = createAsyncThunk(
+  'transactions/fetchPOSTransactions',
+  async (_, { rejectWithValue }) => {
+    try {
+     
+      const response = await axios.get(`${BASE_URL}/POStransactions`, { headers })
+      // console.log("pos transactions",response.data);
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Something went wrong')
+    }
+  }
+)
+
 const transactionSlice = createSlice({
   name: 'transactions',
   initialState: {
     transactions: [],
+    // posTransactions: [],
     transactionDetails: null,
     loading: false,
     error: null,
@@ -147,6 +156,21 @@ const transactionSlice = createSlice({
         state.loading = false
         state.error = action.payload
         toast.error('Failed to delete transaction.')
+      })
+
+      // Fetch POS Transactions
+      .addCase(fetchPOSTransactions.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchPOSTransactions.fulfilled, (state, action) => {
+        state.loading = false
+        state.transactions = action.payload
+      })
+      .addCase(fetchPOSTransactions.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+        toast.error('Failed to fetch POS transactions.')
       })
   },
 })
