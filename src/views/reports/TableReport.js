@@ -11,7 +11,6 @@ const TableReport = () => {
   const dispatch = useDispatch()
   const { tableReport, loading } = useSelector((state) => state.reports)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
-
   const today = new Date()
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(today.getFullYear() - 1)

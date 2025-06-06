@@ -13,7 +13,6 @@ const Customer = () => {
   const dispatch = useDispatch()
   const { customers, loading } = useSelector((state) => state.customers)
   const restaurantId = useSelector((state) => state.auth.restaurantId)
-
   const isMobile = useMediaQuery('(max-width:600px)')
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)

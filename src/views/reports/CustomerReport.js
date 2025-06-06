@@ -16,10 +16,11 @@
           }
         }, [dispatch, restaurantId])
       
+
         const columns = [
           {
             field: 'id',
-            headerName: 'Id',
+            headerName: 'S.No.',
             flex: 1,
             headerClassName: 'header-style',
           },
