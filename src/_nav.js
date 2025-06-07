@@ -172,6 +172,61 @@ const _nav = [
         name: 'Table Report',
         to: '/table-report',
       },
+      {
+        component: CNavItem,
+        name: 'Payment Type Report',
+        to: '/payment-type-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Dahsboard Statistics Report',
+        to: '/dashboard-statistics-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Tax Collection Report',
+        to: '/tax-collection-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Transaction By Date Report',
+        to: '/transactionByDate-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Table Usage Report',
+        to: '/table-usage-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Discount Usage Report',
+        to: '/discount-usage-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Average Order Report',
+        to: '/average-order-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Payment Type Transaction Report',
+        to: '/payment-type-transaction-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Total Revenue Report',
+        to: '/total-revenue-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Most Ordered Dishes',
+        to: '/most-ordered-dishes-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Yearly Chart Report',
+        to: '/yearly-chart-report',
+      },
     
     ],
   },

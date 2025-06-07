@@ -406,6 +406,17 @@ import CustomerReport from './views/reports/CustomerReport'
 import TableReport from './views/reports/TableReport'
 import Banner from './views/banners/Banner'
 import { fetchOrders } from './redux/slices/orderSlice' 
+import PaymentTypeReport from './views/reports/PaymentTypeReport'
+import DashboardStatisticsReport from './views/reports/DashboardStatisticsReport'
+import TransactionCountReport from './views/reports/TransactionCountReport'
+import TaxCollectedReport from './views/reports/TaxCollectedReport'
+import TableUsageReport from './views/reports/TableUsageReport'
+import DiscountUsageReport from './views/reports/DiscountUsageReport'
+import AverageOrderValueReport from './views/reports/AverageOrderValueReport'
+import TransactionsByPaymentTypeReport from './views/reports/TransactionsByPaymentTypeReport'
+import TotalRevenueReport from './views/reports/TotalRevenueReport'
+import MostOrderedDishesReport from './views/reports/MostOrderedDishesReport'
+import YearlyChartReport from './views/reports/YearlyChartReport'
 
 // Lazy Loading for pages
 const SubCategory = React.lazy(() => import('./views/subCategory/SubCategory'))
@@ -725,6 +736,94 @@ const App = () => {
                       element={
                         <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
                           <TableReport />
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="payment-type-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <PaymentTypeReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="dashboard-statistics-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <DashboardStatisticsReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="transactionByDate-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <TransactionCountReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="tax-collection-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <TaxCollectedReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="table-usage-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <TableUsageReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="discount-usage-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <DiscountUsageReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="average-order-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <AverageOrderValueReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="payment-type-transaction-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <TransactionsByPaymentTypeReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="total-revenue-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <TotalRevenueReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="most-ordered-dishes-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <MostOrderedDishesReport/>
+                        </PermissionRestrictedRoute>
+                      }
+                    />
+                    <Route
+                      path="yearly-chart-report"
+                      element={
+                        <PermissionRestrictedRoute permission={restaurantPermission?.permission}>
+                          <YearlyChartReport/>
                         </PermissionRestrictedRoute>
                       }
                     />
