@@ -217,15 +217,20 @@ const _nav = [
         name: 'Total Revenue Report',
         to: '/total-revenue-report',
       },
-      {
-        component: CNavItem,
-        name: 'Most Ordered Dishes',
-        to: '/most-ordered-dishes-report',
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Most Ordered Dishes',
+      //   to: '/most-ordered-dishes-report',
+      // },
       {
         component: CNavItem,
         name: 'Yearly Chart Report',
         to: '/yearly-chart-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Weekly Chart Report',
+        to: '/weekly-chart-report',
       },
     
     ],

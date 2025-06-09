@@ -256,6 +256,27 @@ export const fetchDashboardChartData = createAsyncThunk(
   },
 )
 
+export const fetchWeeklyChartData = createAsyncThunk(
+  'report/fetchWeeklyChartData',
+  async ({ year, restaurantId }, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.get(
+        `${BASE_URL}/dashboard/weekly-chart-data`,
+        {
+          params: { year, restaurantId },
+          ...configureHeaders(token),
+        },
+      );
+      return data;             
+    } catch (err) {
+      const message =
+        err.response?.data?.error || err.message || 'Unable to fetch weekly data';
+      return rejectWithValue(message);
+    }
+  },
+);
+
+
 // Report slice
 const reportSlice = createSlice({
   name: 'reports',
@@ -275,6 +296,7 @@ const reportSlice = createSlice({
     totalRevenueByDate: [],
     mostOrderedDishes: [],
     yearlyChartData : [],
+    weeklyChartData: null,
     avgOrderValueLoading: false,
     loading: false,
     error: null,
@@ -490,6 +512,22 @@ const reportSlice = createSlice({
       .addCase(fetchDashboardChartData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.error || 'Error fetching chart data';
+      })
+
+
+
+       .addCase(fetchWeeklyChartData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchWeeklyChartData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.weeklyChartData = action.payload;
+      })
+      .addCase(fetchWeeklyChartData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        toast.error(action.payload);     // same UX pattern as your other slices
       });
   },
 })

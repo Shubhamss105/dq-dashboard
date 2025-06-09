@@ -53,7 +53,6 @@ export default function SubCategory() {
     }
   }, [dispatch, token, restaurantId])
 
-  // Fetch category by ID for each unique category_id in subCategories
   useEffect(() => {
     const uniqueCategoryIds = [...new Set(subCategories.map((sub) => sub.category_id))]
 
@@ -276,7 +275,7 @@ export default function SubCategory() {
             }
             className="mb-3"
           />
-          <CFormSelect
+          <CFormSelect 
             value={editedSubCategory.category_id || ''}
             onChange={(e) =>
               setEditedSubCategory((prev) => ({ ...prev, category_id: e.target.value }))

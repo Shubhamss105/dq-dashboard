@@ -22,9 +22,9 @@ const  DashboardStatisticsReport = () => {
     }
   }, [restaurantId, dispatch]);
 
-  if (loading || !dashboardStats) {
-    return <CSpinner />;
-  }
+  // if (loading || !dashboardStats) {
+  //   return <CSpinner />;
+  // }
 
   const {
     todayCollection,

@@ -1,51 +1,93 @@
-// import React, { useEffect } from 'react';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { Line } from 'react-chartjs-2';
-// import { fetchDashboardChartData } from '../../redux/slices/reportSlice';
-// import { CCard, CCardBody, CSpinner } from '@coreui/react';
-// import { useTheme } from '@mui/material/styles';
 
-// const YearlyChartReport = () => {
-//   const dispatch = useDispatch();
-//   const theme = useTheme();
-//   const { restaurantId } = useSelector((state) => state.auth);
-//   const { yearlyChartData, loading } = useSelector((state) => state.reports);
-//   const currentYear = new Date().getFullYear();
-//     console.log('chartData', yearlyChartData);
-//   useEffect(() => {
-//     if (restaurantId) {
-//       dispatch(fetchDashboardChartData({ year: currentYear, restaurantId }));
-//     }
-//   }, [restaurantId, dispatch]);
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { CCard, CCardHeader, CCardBody, CFormSelect, CSpinner } from '@coreui/react';
+import { CChartLine } from '@coreui/react-chartjs';
+import { fetchChartData } from '../../redux/slices/dashboardSlice';
 
+const YearlyChartReport = () => {
+  const dispatch = useDispatch();
+  const restaurantId = useSelector((state) => state.auth.restaurantId);
+  const { chartData, loading } = useSelector((state) => state.dashboard);
 
-//   const chartOptions = {
-//     responsive: true,
-//     plugins: {
-//       legend: { position: 'top' },
-//       title: { display: true, text: `Yearly Stats - ${currentYear}` },
-//     },
-//   };
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
 
-//   const chartDataset = {
-//     labels: yearlyChartData.labels,
-//     datasets: yearlyChartData.datasets.map((dataset) => ({
-//       ...dataset,
-//       tension: 0.3,
-//       borderWidth: 2,
-//       pointRadius: 4,
-//       pointHoverRadius: 6,
-//     })),
-//   };
+  const yearOptions = Array.from({ length: 10 }, (_, i) => {
+    const year = currentYear - i;
+    return (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    );
+  });
 
-//   return (
-//     <CCard className="mt-4">
-//       <CCardBody>
-//         <h4 className="mb-4">Dashboard Yearly Chart</h4>
-//         <Line options={chartOptions} data={chartDataset} />
-//       </CCardBody>
-//     </CCard>
-//   );
-// };
+  useEffect(() => {
+    if (restaurantId) {
+      dispatch(fetchChartData({ year: selectedYear, restaurantId }));
+    }
+  }, [selectedYear, restaurantId, dispatch]);
 
-// export default YearlyChartReport;
+  const formattedDatasets =
+    chartData?.datasets?.map((ds) => ({
+      ...ds,
+      data: ds.data.map((val) => parseFloat(val)),
+      tension: 0.4,
+      fill: false,
+      borderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    })) || [];
+
+  return (
+    <CCard className="my-4">
+      <CCardHeader className="d-flex justify-content-between align-items-center">
+        <h5 className="mb-0">Yearly Performance Report</h5>
+        <CFormSelect
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+          style={{ width: '120px' }}
+        >
+          {yearOptions}
+        </CFormSelect>
+      </CCardHeader>
+      <CCardBody >
+        {loading ? (
+          <div className="d-flex justify-content-center">
+            <CSpinner color="primary" variant="grow" />
+          </div>
+        ) : (
+          <CChartLine
+            data={{
+              labels: chartData?.labels || [],
+              datasets: formattedDatasets,
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: `Yearly Performance for ${selectedYear}`,
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: (value) => `₹${value}`,
+                  },
+                },
+              },
+            }}
+            style={{ height: '400px' }}
+          />
+        )}
+      </CCardBody>
+    </CCard>
+  );
+};
+
+export default YearlyChartReport;
